@@ -1,0 +1,1728 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>NEXQIRO — Master Super Admin Control Center</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Firebase Compat SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+
+  <style>
+    :root {
+      --bg-base: #060911;
+      --bg-surface: #0c1220;
+      --bg-card: #121a2f;
+      --bg-card-hover: #18233f;
+      --border-color: rgba(168, 85, 247, 0.25);
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --primary: #f59e0b;
+      --primary-hover: #d97706;
+      --purple: #a855f7;
+      --purple-hover: #9333ea;
+      --purple-glow: rgba(168, 85, 247, 0.35);
+      --accent: #ef4444;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --info: #38bdf8;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --sidebar-width: 270px;
+      --header-height: 64px;
+      --font-display: 'Rajdhani', sans-serif;
+      --font-body: 'Hind Siliguri', sans-serif;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --shadow-card: 0 4px 20px -2px rgba(0, 0, 0, 0.6);
+      --shadow-glow: 0 0 25px rgba(168, 85, 247, 0.18);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body { background-color: var(--bg-base); color: var(--text-main); font-family: var(--font-body); min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; line-height: 1.5; }
+    h1, h2, h3, h4, .font-heading, .stat-value, .badge { font-family: var(--font-display); text-transform: uppercase; letter-spacing: 0.5px; }
+
+    #app-container { display: flex; min-height: 100vh; width: 100%; }
+
+    /* Sidebar */
+    .sidebar { width: var(--sidebar-width); background: var(--bg-surface); border-right: 1px solid var(--border-subtle); display: flex; flex-direction: column; position: fixed; top: 0; bottom: 0; left: 0; z-index: 100; transition: transform 0.3s ease; }
+    .brand-header { padding: 18px 16px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border-subtle); }
+    .brand-logo { width: 44px; height: 44px; border-radius: var(--radius-md); background: linear-gradient(135deg, #a855f7, #ec4899); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 15px var(--purple-glow); flex-shrink: 0; }
+    .brand-logo svg { width: 28px; height: 28px; fill: #fff; }
+    .brand-title { font-size: 1.25rem; font-weight: 700; color: #fff; letter-spacing: 1px; }
+    .brand-sub { font-size: 0.7rem; color: var(--purple); font-weight: 600; letter-spacing: 1px; }
+
+    /* Site Selector Box in Sidebar */
+    .site-selector-box { padding: 12px 14px; background: rgba(168, 85, 247, 0.08); border-bottom: 1px solid var(--border-subtle); }
+    .site-selector-label { font-size: 0.72rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
+    .site-select { width: 100%; background: var(--bg-card); border: 1px solid var(--border-color); color: #fff; padding: 8px 10px; border-radius: var(--radius-sm); font-size: 0.85rem; font-weight: 600; outline: none; }
+
+    .nav-list { list-style: none; padding: 14px 10px; display: flex; flex-direction: column; gap: 3px; flex: 1; overflow-y: auto; }
+    .nav-section-title { font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700; padding: 8px 12px 4px; letter-spacing: 0.5px; }
+    .nav-item button { width: 100%; background: transparent; border: 1px solid transparent; border-radius: var(--radius-md); padding: 10px 14px; color: var(--text-muted); font-size: 0.92rem; font-weight: 500; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: all 0.2s; text-align: left; }
+    .nav-item button svg { width: 18px; height: 18px; flex-shrink: 0; fill: currentColor; }
+    .nav-item button:hover { background: var(--bg-card); color: var(--text-main); }
+    .nav-item.active button { background: linear-gradient(90deg, rgba(168, 85, 247, 0.18), rgba(236, 72, 153, 0.05)); border: 1px solid var(--border-color); color: #c084fc; font-weight: 600; box-shadow: inset 3px 0 0 var(--purple); }
+    .nav-badge { margin-left: auto; background: var(--accent); color: #fff; font-size: 0.72rem; padding: 2px 7px; border-radius: 10px; font-weight: 700; }
+
+    .sidebar-footer { padding: 14px 16px; border-top: 1px solid var(--border-subtle); background: rgba(0, 0, 0, 0.2); }
+    .admin-pill { display: flex; align-items: center; gap: 10px; }
+    .admin-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--purple); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem; }
+    .admin-details { flex: 1; overflow: hidden; }
+    .admin-name { font-size: 0.85rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .admin-role { font-size: 0.68rem; color: var(--purple); font-weight: 700; text-transform: uppercase; }
+
+    /* Main Content */
+    .main-wrapper { flex: 1; margin-left: var(--sidebar-width); display: flex; flex-direction: column; min-width: 0; }
+    .topbar { height: var(--header-height); background: var(--bg-surface); border-bottom: 1px solid var(--border-subtle); position: sticky; top: 0; z-index: 90; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; backdrop-filter: blur(10px); }
+    .mobile-menu-btn { display: none; background: transparent; border: none; color: var(--text-main); padding: 8px; cursor: pointer; }
+    .status-indicator { display: flex; align-items: center; gap: 8px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; color: var(--success); font-weight: 600; }
+    .status-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; box-shadow: 0 0 8px currentColor; }
+    .topbar-actions { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+
+    .btn-icon { background: var(--bg-card); border: 1px solid var(--border-subtle); color: var(--text-muted); width: 38px; height: 38px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; }
+    .btn-icon:hover { color: var(--purple); border-color: var(--border-color); transform: translateY(-1px); }
+    .btn-icon svg { width: 18px; height: 18px; fill: currentColor; }
+
+    .content-area { padding: 24px; flex: 1; max-width: 1400px; width: 100%; margin: 0 auto; }
+    .view-section { display: none; animation: fadeIn 0.25s ease-in-out; }
+    .view-section.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Cards */
+    .card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 20px; box-shadow: var(--shadow-card); position: relative; overflow: hidden; }
+    .card.purple-border { border-top: 3px solid var(--purple); }
+    .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; gap: 12px; }
+    .card-title { font-size: 1.15rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px; }
+
+    /* Stats Grid */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .stat-card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 18px 20px; display: flex; align-items: center; gap: 16px; transition: all 0.2s; }
+    .stat-card:hover { border-color: var(--border-color); transform: translateY(-2px); box-shadow: var(--shadow-glow); }
+    .stat-icon { width: 48px; height: 48px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .stat-icon svg { width: 24px; height: 24px; fill: #fff; }
+    .stat-purple { background: linear-gradient(135deg, rgba(168, 85, 247, 0.25), rgba(168, 85, 247, 0.05)); border: 1px solid rgba(168, 85, 247, 0.4); color: var(--purple); }
+    .stat-gold { background: linear-gradient(135deg, rgba(245, 158, 11, 0.25), rgba(245, 158, 11, 0.05)); border: 1px solid rgba(245, 158, 11, 0.4); color: var(--primary); }
+    .stat-green { background: linear-gradient(135deg, rgba(16, 185, 129, 0.25), rgba(16, 185, 129, 0.05)); border: 1px solid rgba(16, 185, 129, 0.4); color: var(--success); }
+    .stat-red { background: linear-gradient(135deg, rgba(239, 68, 68, 0.25), rgba(239, 68, 68, 0.05)); border: 1px solid rgba(239, 68, 68, 0.4); color: var(--accent); }
+    .stat-blue { background: linear-gradient(135deg, rgba(56, 189, 248, 0.25), rgba(56, 189, 248, 0.05)); border: 1px solid rgba(56, 189, 248, 0.4); color: var(--info); }
+    .stat-info { flex: 1; overflow: hidden; }
+    .stat-title { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 2px; font-weight: 500; }
+    .stat-value { font-size: 1.65rem; font-weight: 700; color: #fff; line-height: 1.1; }
+
+    /* Buttons */
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 18px; border-radius: var(--radius-sm); font-size: 0.9rem; font-weight: 600; cursor: pointer; border: 1px solid transparent; transition: all 0.2s; white-space: nowrap; min-height: 40px; }
+    .btn svg { width: 16px; height: 16px; fill: currentColor; }
+    .btn-primary { background: linear-gradient(135deg, var(--purple), #7e22ce); color: #fff; font-weight: 700; box-shadow: 0 4px 15px var(--purple-glow); }
+    .btn-primary:hover { background: linear-gradient(135deg, #c084fc, #9333ea); transform: translateY(-1px); }
+    .btn-gold { background: linear-gradient(135deg, var(--primary), #d97706); color: #070a13; font-weight: 700; }
+    .btn-outline { background: transparent; border: 1px solid var(--border-color); color: #c084fc; }
+    .btn-outline:hover { background: rgba(168, 85, 247, 0.1); border-color: var(--purple); }
+    .btn-secondary { background: var(--bg-surface); border: 1px solid var(--border-subtle); color: var(--text-muted); }
+    .btn-secondary:hover { color: var(--text-main); }
+    .btn-success { background: var(--success); color: #fff; }
+    .btn-accent { background: var(--accent); color: #fff; }
+    .btn-sm { padding: 6px 12px; font-size: 0.8rem; min-height: 32px; }
+
+    /* Badges */
+    .badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.5px; }
+    .badge-purple { background: rgba(168, 85, 247, 0.2); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.4); }
+    .badge-approved { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .badge-pending { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .badge-rejected { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+
+    /* Tables */
+    .table-container { width: 100%; overflow-x: auto; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); }
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; }
+    th { background: var(--bg-surface); color: var(--text-muted); font-family: var(--font-display); font-weight: 600; font-size: 0.8rem; padding: 12px 16px; border-bottom: 1px solid var(--border-subtle); white-space: nowrap; }
+    td { padding: 14px 16px; border-bottom: 1px solid var(--border-subtle); color: var(--text-main); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--bg-card-hover); }
+
+    /* Toolbar */
+    .toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+
+    /* Forms & Modals */
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group label { font-size: 0.85rem; font-weight: 600; color: var(--text-muted); }
+    .form-control { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); color: var(--text-main); padding: 10px 14px; font-size: 0.9rem; outline: none; transition: border 0.2s; width: 100%; }
+    .form-control:focus { border-color: var(--purple); }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(5px); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 16px; overflow-y: auto; }
+    .modal-backdrop.active { display: flex; }
+    .modal-card { background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); width: 100%; max-width: 620px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8); overflow: hidden; display: flex; flex-direction: column; max-height: 92vh; margin: auto; }
+    .modal-header { padding: 18px 22px; border-bottom: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: space-between; background: var(--bg-card); }
+    .modal-title { font-size: 1.2rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px; }
+    .modal-close { background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 4px; font-size: 1.1rem; }
+    .modal-body { padding: 22px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; flex: 1; }
+    .modal-footer { padding: 16px 22px; border-top: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: flex-end; gap: 12px; background: var(--bg-card); }
+
+    /* Login Screen */
+    #login-overlay { position: fixed; inset: 0; background: radial-gradient(circle at center, #1a102f 0%, #060911 100%); z-index: 1500; display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .login-box { width: 100%; max-width: 420px; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 32px 28px; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), var(--shadow-glow); text-align: center; }
+
+    /* Toast */
+    .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 2000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+    .toast { background: var(--bg-surface); border-left: 4px solid var(--purple); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); border-radius: var(--radius-sm); padding: 12px 18px; color: #fff; font-size: 0.9rem; display: flex; align-items: center; gap: 12px; pointer-events: auto; }
+    .toast.success { border-color: var(--success); }
+    .toast.error { border-color: var(--accent); }
+
+    /* Fund Request Cards in Hub */
+    .fund-req-card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 16px 20px; display: flex; flex-direction: column; gap: 10px; transition: all 0.2s; }
+    .fund-req-card.pending { border-left: 4px solid var(--warning); background: linear-gradient(90deg, rgba(245, 158, 11, 0.05), var(--bg-card)); }
+    .fund-req-card.approved { border-left: 4px solid var(--success); }
+    .fund-req-card.rejected { border-left: 4px solid var(--accent); }
+
+    /* Permission Matrix Grid */
+    .permission-matrix-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+    .perm-toggle-item { background: var(--bg-card); border: 1px solid var(--border-subtle); padding: 12px 14px; border-radius: var(--radius-sm); display: flex; justify-content: space-between; align-items: center; }
+
+    @media (max-width: 900px) {
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .main-wrapper { margin-left: 0; }
+      .mobile-menu-btn { display: block; }
+    }
+
+    /* GAMES CONTROL CENTER START (CSS) - স্কোপ: #view-games ও #gcc-modal এর ভেতরে */
+    #view-games .gcc-bulk { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
+    #view-games .gcc-th, #view-games .gcc-cell { white-space: nowrap; }
+    #view-games .gcc-cell-inner { display: flex; align-items: center; gap: 10px; }
+    #view-games .gcc-switch { position: relative; display: inline-block; width: 46px; height: 26px; flex-shrink: 0; }
+    #view-games .gcc-switch input { opacity: 0; width: 0; height: 0; }
+    #view-games .gcc-slider { position: absolute; inset: 0; background: #334155; border-radius: 999px; cursor: pointer; transition: background 0.25s; }
+    #view-games .gcc-slider::before { content: ""; position: absolute; width: 20px; height: 20px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: transform 0.25s; }
+    #view-games .gcc-switch input:checked + .gcc-slider { background: var(--accent); }
+    #view-games .gcc-switch input:checked + .gcc-slider::before { transform: translateX(20px); }
+    #view-games .gcc-pill { font-size: 0.72rem; font-weight: 700; padding: 3px 9px; border-radius: 999px; border: 1px solid transparent; }
+    #view-games .gcc-pill.live { background: rgba(16, 185, 129, 0.15); color: #10b981; border-color: rgba(16, 185, 129, 0.3); }
+    #view-games .gcc-pill.maint { background: rgba(239, 68, 68, 0.15); color: #ef4444; border-color: rgba(239, 68, 68, 0.3); }
+
+    #gcc-modal { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(5px); z-index: 1100; display: none; align-items: center; justify-content: center; padding: 16px; overflow-y: auto; }
+    #gcc-modal.active { display: flex; }
+    #gcc-modal .gcc-dialog { background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); width: 100%; max-width: 460px; padding: 26px 24px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8); animation: gccPop 0.2s ease-out; margin: auto; }
+    #gcc-modal .gcc-dialog h4 { color: #fff; font-size: 1.2rem; margin-bottom: 8px; text-align: center; }
+    #gcc-modal .gcc-dialog p { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 16px; text-align: center; }
+    #gcc-modal .gcc-fields { display: flex; flex-direction: column; gap: 14px; margin-bottom: 18px; }
+    #gcc-modal .gcc-dialog-actions { display: flex; gap: 10px; justify-content: center; }
+    @keyframes gccPop { from { opacity: 0; transform: scale(0.94); } to { opacity: 1; transform: scale(1); } }
+    /* GAMES CONTROL CENTER END (CSS) */
+  </style>
+</head>
+<body data-theme="dark">
+
+  <!-- LOGIN OVERLAY -->
+  <div id="login-overlay">
+    <div class="login-box">
+      <div class="brand-logo" style="width:60px; height:60px; margin:0 auto 16px;">
+        <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+      </div>
+      <h2 style="font-size:1.6rem; color:#fff; margin-bottom:4px;">NEXQIRO</h2>
+      <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:20px;">Master Super Admin Control Center</p>
+      
+      <form id="super-admin-login-form" onsubmit="handleSuperAdminLogin(event)">
+        <div class="form-group" style="text-align:left; margin-bottom:14px;">
+          <label>Super Admin ইমেইল বা ইউজারনেম</label>
+          <input type="text" id="login-email" class="form-control" placeholder="Mijanbabu2015@gmail.com / admin" value="Mijanbabu2015@gmail.com" required autocomplete="username">
+        </div>
+        <div class="form-group" style="text-align:left; margin-bottom:20px;">
+          <label>সিকিউরিটি পাসওয়ার্ড</label>
+          <input type="password" id="login-password" class="form-control" placeholder="••••••••" value="admin12345" required autocomplete="current-password">
+        </div>
+        <button type="submit" class="btn btn-primary" id="btn-login" style="width:100%;">
+          🔐 লগইন করুন (Master Sign In)
+        </button>
+        <p style="margin-top:14px; font-size:0.75rem; color:var(--text-dim);">
+          🔒 শুধুমাত্র অথোরাইজড Super Admin প্রবেশ করতে পারবেন।
+        </p>
+      </form>
+    </div>
+  </div>
+
+  <!-- APP CONTAINER -->
+  <div id="app-container">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="brand-header">
+        <div class="brand-logo">
+          <svg viewBox="0 0 24 24"><path d="M12 2L1 7l11 5 9-4.09V17h2V7L12 2zm0 13.09L4.27 11.5 2 12.53l10 4.55 10-4.55-2.27-1.03L12 15.09zm0 4.54l-7.73-3.51L2 17.16l10 4.55 10-4.55-2.27-1.04L12 19.63z"/></svg>
+        </div>
+        <div>
+          <div class="brand-title">NEXQIRO</div>
+          <div class="brand-sub">SUPER ADMIN CENTER</div>
+        </div>
+      </div>
+
+      <!-- ACTIVE SITE SELECTOR -->
+      <div class="site-selector-box">
+        <div class="site-selector-label">
+          <span>টার্গেট সাইট সিলেক্টর</span>
+          <span id="active-site-indicator" class="badge badge-purple">সকল সাইট</span>
+        </div>
+        <select id="global-site-select" class="site-select" onchange="selectActiveSite(this.value)">
+          <option value="ALL">🌐 সকল সংযুক্ত সাইট (All Sites)</option>
+          <option value="np-tournament-bd" selected>🎮 NP TOURNAMENT BD</option>
+        </select>
+      </div>
+
+      <!-- NAVIGATION -->
+      <ul class="nav-list">
+        <div class="nav-section-title">সেন্ট্রাল কন্ট্রোল (Master Control)</div>
+        <li class="nav-item active" data-view="view-dashboard">
+          <button onclick="switchView('view-dashboard')">
+            <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+            <span class="nav-label">মাস্টার ড্যাশবোর্ড</span>
+          </button>
+        </li>
+        <li class="nav-item" data-view="view-master-wallet">
+          <button onclick="switchView('view-master-wallet'); renderMasterWallet();">
+            <svg viewBox="0 0 24 24"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+            <span class="nav-label">NEXQIRO Master Wallet</span>
+          </button>
+        </li>
+        <li class="nav-item" data-view="view-fund-requests">
+          <button onclick="switchView('view-fund-requests'); renderFundRequests();">
+            <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+            <span class="nav-label">এডমিন ফান্ড রিকোয়েস্ট</span>
+            <span class="nav-badge" id="sidebar-fund-badge">0</span>
+          </button>
+        </li>
+        <li class="nav-item" data-view="view-admin-balances">
+          <button onclick="switchView('view-admin-balances'); renderAdminBalancesTable();">
+            <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+            <span class="nav-label">User Admin ব্যালেন্স তালিকা</span>
+          </button>
+        </li>
+        <li class="nav-item" data-view="view-games">
+          <button onclick="switchView('view-games'); renderGames();">
+            <svg viewBox="0 0 24 24"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4-3c-.83 0-1.5-.67-1.5-1.5S18.67 9 19.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+            <span class="nav-label">গেম কন্ট্রোল (Games Management)</span>
+          </button>
+        </li>
+        <li class="nav-item" data-view="view-permissions">
+          <button onclick="switchView('view-permissions'); renderPermissions();">
+            <svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+            <span class="nav-label">পারমিশন ম্যাট্রিক্স (22)</span>
+          </button>
+        </li>
+        <li class="nav-item" data-view="view-sites">
+          <button onclick="switchView('view-sites'); renderSites();">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+            <span class="nav-label">সাইট রেজিস্ট্রি</span>
+          </button>
+        </li>
+        <li class="nav-item" data-view="view-audit">
+          <button onclick="switchView('view-audit'); renderAudit();">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+            <span class="nav-label">সেন্ট্রাল অডিট ট্রেইল</span>
+          </button>
+        </li>
+      </ul>
+
+      <!-- FOOTER -->
+      <div class="sidebar-footer">
+        <div class="admin-pill">
+          <div class="admin-avatar" id="sidebar-avatar">M</div>
+          <div class="admin-details">
+            <div class="admin-name" id="sidebar-email">Mijanbabu2015@gmail.com</div>
+            <div class="admin-role">MASTER SUPER ADMIN</div>
+          </div>
+          <button class="btn-icon" onclick="handleLogout()" title="লগআউট" style="width:32px; height:32px;">
+            <svg viewBox="0 0 24 24"><path d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT WRAPPER -->
+    <div class="main-wrapper">
+      <header class="topbar">
+        <button class="mobile-menu-btn" onclick="toggleSidebar()">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+        </button>
+
+        <div class="status-indicator">
+          <span class="status-dot"></span>
+          <span>🟢 NEXQIRO সেন্ট্রাল অথরিটি কানেক্টেড</span>
+        </div>
+
+        <div class="topbar-actions">
+          <button class="btn-icon" onclick="switchView('view-fund-requests'); renderFundRequests();" title="পেন্ডিং ফান্ড রিকোয়েস্ট" style="position:relative;">
+            <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/></svg>
+            <span id="topbar-fund-badge" style="position:absolute; top:-4px; right:-4px; background:var(--accent); color:#fff; font-size:0.68rem; font-weight:800; border-radius:10px; padding:1px 6px; display:none;">0</span>
+          </button>
+          <button class="btn btn-primary btn-sm" onclick="openAdjustMasterWalletModal()">
+            💰 মাস্টার ব্যালেন্স সমন্বয়
+          </button>
+          <button class="btn btn-secondary btn-sm" onclick="handleLogout()">লগআউট</button>
+        </div>
+      </header>
+
+      <main class="content-area">
+
+        <!-- 1. DASHBOARD -->
+        <section id="view-dashboard" class="view-section active">
+          <!-- Master Wallet Card -->
+          <div class="card purple-border" style="margin-bottom:24px; background:linear-gradient(135deg, rgba(168, 85, 247, 0.12), rgba(12, 18, 32, 0.95));">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:14px;">
+              <div>
+                <span class="badge badge-purple">NEXQIRO CENTRAL MASTER WALLET</span>
+                <h3 style="color:#fff; margin-top:4px;">সেন্ট্রাল মাস্টার ফান্ড রিজার্ভ</h3>
+                <small style="color:var(--text-muted);">সমস্ত User Admin-এর ব্যালেন্স এই সেন্ট্রাল মাস্টার ফান্ড থেকে অনুমোদনের মাধ্যমে নিয়ন্ত্রিত হয়।</small>
+              </div>
+              <div style="display:flex; gap:8px;">
+                <button class="btn btn-primary btn-sm" onclick="openAdjustMasterWalletModal()">+ ফান্ড রিচার্জ / সমন্বয়</button>
+                <button class="btn btn-outline btn-sm" onclick="switchView('view-fund-requests'); renderFundRequests();">📥 পেন্ডিং রিকোয়েস্ট দেখুন</button>
+              </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(190px, 1fr)); gap:12px;">
+              <div style="background:var(--bg-surface); padding:12px 16px; border-radius:var(--radius-sm); border:1px solid rgba(168, 85, 247, 0.3);">
+                <div style="font-size:0.75rem; color:var(--text-dim); text-transform:uppercase;">উপলব্ধ মাস্টার ব্যালেন্স</div>
+                <div style="font-size:1.6rem; font-weight:700; color:#c084fc; font-family:var(--font-display);" id="mw-dash-bal">৳ 100,000</div>
+              </div>
+              <div style="background:var(--bg-surface); padding:12px 16px; border-radius:var(--radius-sm); border:1px solid rgba(16, 185, 129, 0.3);">
+                <div style="font-size:0.75rem; color:var(--text-dim); text-transform:uppercase;">মোট ক্রেডিট ইনজেকশন</div>
+                <div style="font-size:1.6rem; font-weight:700; color:var(--success); font-family:var(--font-display);" id="mw-dash-credits">৳ 100,000</div>
+              </div>
+              <div style="background:var(--bg-surface); padding:12px 16px; border-radius:var(--radius-sm); border:1px solid rgba(239, 68, 68, 0.3);">
+                <div style="font-size:0.75rem; color:var(--text-dim); text-transform:uppercase;">User Admin-এ মোট বরাদ্দ (Debits)</div>
+                <div style="font-size:1.6rem; font-weight:700; color:var(--accent); font-family:var(--font-display);" id="mw-dash-debits">৳ 0</div>
+              </div>
+              <div style="background:var(--bg-surface); padding:12px 16px; border-radius:var(--radius-sm); border:1px solid rgba(245, 158, 11, 0.3);">
+                <div style="font-size:0.75rem; color:var(--text-dim); text-transform:uppercase;">অপেক্ষমান ফান্ড আবেদন</div>
+                <div style="font-size:1.6rem; font-weight:700; color:var(--warning); font-family:var(--font-display);" id="mw-dash-pending-cnt">0 টি</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Stats -->
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon stat-purple"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg></div>
+              <div class="stat-info">
+                <div class="stat-title">সংযুক্ত ওয়েবসাইট</div>
+                <div class="stat-value" id="dash-sites-count">1</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon stat-blue"><svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg></div>
+              <div class="stat-info">
+                <div class="stat-title">সক্রিয় User Admin</div>
+                <div class="stat-value" id="dash-admins-count">1</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon stat-gold"><svg viewBox="0 0 24 24"><path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94.63 1.5 1.98 2.63 3.61 2.96V19H7v2h10v-2h-4v-3.1c1.63-.33 2.98-1.46 3.61-2.96C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2z"/></svg></div>
+              <div class="stat-info">
+                <div class="stat-title">চলমান টুর্নামেন্ট</div>
+                <div class="stat-value" id="dash-tourneys-count">0</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon stat-green"><svg viewBox="0 0 24 24"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg></div>
+              <div class="stat-info">
+                <div class="stat-title">অনুমোদিত ফান্ড বরাদ্দ</div>
+                <div class="stat-value" id="dash-approved-funds">৳ 0</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Fund Requests Live Feed -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><span>সাম্প্রতিক এডমিন ফান্ড আবেদন (Realtime Feed)</span></div>
+              <button class="btn btn-outline btn-sm" onclick="switchView('view-fund-requests'); renderFundRequests();">সব দেখুন</button>
+            </div>
+            <div id="dash-recent-fund-requests-container" style="display:flex; flex-direction:column; gap:10px;"></div>
+          </div>
+        </section>
+
+        <!-- 2. MASTER WALLET VIEW -->
+        <section id="view-master-wallet" class="view-section">
+          <div class="toolbar">
+            <div>
+              <h3 style="color:#fff;">NEXQIRO Master Wallet (মাস্টার ফান্ড লেজার)</h3>
+              <p style="font-size:0.8rem; color:var(--text-muted);">মাস্টার ব্যালেন্সের প্রতিটি ক্রেডিট ও ডেবিট ডাবল-এন্ট্রি বুককিপিং আকারে রেকর্ড থাকে।</p>
+            </div>
+            <button class="btn btn-primary" onclick="openAdjustMasterWalletModal()">+ ব্যালেন্স যোগ / সমন্বয়</button>
+          </div>
+
+          <div class="card" style="margin-bottom:20px;">
+            <div class="card-header"><div class="card-title"><span>Master Wallet Immutable Ledger</span></div></div>
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr><th>Trx ID</th><th>ধরন</th><th>পরিমাণ</th><th>আগের ব্যালেন্স</th><th>পরের ব্যালেন্স</th><th>টার্গেট সাইট / এডমিন</th><th>তারিখ ও সময়</th><th>কারণ / বিবরণ</th></tr>
+                </thead>
+                <tbody id="master-wallet-ledger-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- 3. FUND REQUESTS VIEW (Super Admin Approves / Rejects) -->
+        <section id="view-fund-requests" class="view-section">
+          <div class="toolbar">
+            <div>
+              <h3 style="color:#fff;">User Admin ফান্ড অনুমোদন হাব (Fund Requests Hub)</h3>
+              <p style="font-size:0.8rem; color:var(--text-muted);">এখানে User Admin-দের রিকোয়েস্ট যাচাই করে Approve বা Reject করুন। Approve করলে Master Wallet থেকে ব্যালেন্স স্থানান্তরিত হবে।</p>
+            </div>
+          </div>
+
+          <div style="display:flex; gap:8px; margin-bottom:16px;">
+            <button class="btn btn-primary btn-sm" id="btn-freq-all" onclick="filterFundReqs('ALL')">সকল আবেদন</button>
+            <button class="btn btn-secondary btn-sm" id="btn-freq-pending" onclick="filterFundReqs('PENDING')">⏳ পেন্ডিং আবেদন</button>
+            <button class="btn btn-secondary btn-sm" id="btn-freq-approved" onclick="filterFundReqs('APPROVED')">✓ অনুমোদিত</button>
+            <button class="btn btn-secondary btn-sm" id="btn-freq-rejected" onclick="filterFundReqs('REJECTED')">✕ বাতিলকৃত</button>
+          </div>
+
+          <div id="fund-requests-container" style="display:flex; flex-direction:column; gap:14px;"></div>
+        </section>
+
+        <!-- 4. USER ADMIN BALANCES VIEW -->
+        <section id="view-admin-balances" class="view-section">
+          <div class="toolbar">
+            <h3 style="color:#fff;">User Admin সার্ভার-নিয়ন্ত্রিত ব্যালেন্স তালিকা</h3>
+          </div>
+          <div class="card">
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr><th>User Admin Email / UID</th><th>সাইট নাম</th><th>বর্তমান ব্যালেন্স</th><th>মোট প্রাপ্ত ফান্ড</th><th>মোট ব্যয়</th><th>স্ট্যাটাস</th><th>সর্বশেষ আপডেট</th></tr>
+                </thead>
+                <tbody id="admin-wallets-table-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- 5. PERMISSIONS VIEW -->
+        <section id="view-permissions" class="view-section">
+          <div class="toolbar">
+            <div>
+              <h3 style="color:#fff;">এডমিন পারমিশন কন্ট্রোল (22 Granular Features)</h3>
+              <p style="font-size:0.8rem; color:var(--text-muted);">যেকোনো ফিচার বন্ধ করলে সাথে সাথে ওই সাইটের এডমিনের সংশ্লিষ্ট অপারেশন নিষিদ্ধ হবে।</p>
+            </div>
+          </div>
+          <div class="permission-matrix-grid" id="permissions-grid-container"></div>
+        </section>
+
+        <!-- 6. SITES VIEW -->
+        <section id="view-sites" class="view-section">
+          <div class="toolbar"><h3 style="color:#fff;">নিবন্ধিত সাইট তালিকা</h3></div>
+          <div class="card">
+            <div class="table-container">
+              <table>
+                <thead><tr><th>Site ID</th><th>সাইটের নাম</th><th>ডোমেন URL</th><th>স্ট্যাটাস</th><th>রেজিস্ট্রেশন</th></tr></thead>
+                <tbody id="sites-table-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- 7. GAMES VIEW (Super Admin Only Control) -->
+        <section id="view-games" class="view-section">
+          <div class="toolbar">
+            <div>
+              <h3 style="color:#fff;">সাধারণ গেম ম্যানেজমেন্ট (Games Control Center)</h3>
+              <p style="font-size:0.8rem; color:var(--text-muted);">জনপ্রিয় ও ক্র্যাশ গেমসমূহ (Aviator, JetX, Plinko ইত্যাদি) যোগ, সম্পাদনা ও নিষ্ক্রিয় করার কেন্দ্রীয় ক্ষমতা।</p>
+            </div>
+            <button class="btn btn-primary" onclick="openCreateGameModal()">+ নতুন গেম যোগ করুন</button>
+          </div>
+          <div class="card">
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr><th>ছবি</th><th>গেম নাম</th><th>ক্যাটাগরি</th><th>URL</th><th>স্ট্যাটাস</th><th style="text-align:right;">অ্যাকশন</th></tr>
+                </thead>
+                <tbody id="games-table-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- 8. AUDIT VIEW -->
+        <section id="view-audit" class="view-section">
+          <div class="toolbar"><h3 style="color:#fff;">সেন্ট্রাল অডিট ট্রেইল (Immutable Audit Logs)</h3></div>
+          <div class="card">
+            <div class="table-container">
+              <table>
+                <thead><tr><th>এডমিন</th><th>অ্যাকশন</th><th>টার্গেট</th><th>বিবরণ</th><th>সময়</th></tr></thead>
+                <tbody id="audit-table-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- MODAL: ADJUST MASTER WALLET -->
+  <div class="modal-backdrop" id="modal-adjust-master-wallet">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title"><span>💳</span><span>Master Wallet ব্যালেন্স সমন্বয়</span></h3>
+        <button class="modal-close" onclick="closeModal('modal-adjust-master-wallet')">✕</button>
+      </div>
+      <form id="master-wallet-adjust-form" onsubmit="handleAdjustMasterWallet(event)">
+        <div class="modal-body">
+          <div style="background:rgba(168,85,247,0.1); border:1px solid rgba(168,85,247,0.3); border-radius:var(--radius-sm); padding:10px 14px; font-size:0.82rem; color:#e9d5ff;">
+            🔒 শুধুমাত্র Master Super Admin এই ফান্ডের ব্যালেন্স বাড়াতে বা কমাতে পারেন। প্রতিটি সমন্বয়ের ট্রানজেকশন লেজারে সংরক্ষিত হবে।
+          </div>
+          <div class="form-group">
+            <label>সমন্বয়ের পরিমাণ (৳) *</label>
+            <input type="number" id="mw-adjust-amount" class="form-control" placeholder="যেমন: 50000 (যোগ) বা -20000 (কর্তন)" required>
+          </div>
+          <div class="form-group">
+            <label>সমন্বয়ের সুনির্দিষ্ট কারণ *</label>
+            <textarea id="mw-adjust-reason" class="form-control" rows="2" placeholder="যেমন: সেন্ট্রাল ক্যাপিটাল ইনজেকশন..." required minlength="4"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modal-adjust-master-wallet')">বাতিল</button>
+          <button type="submit" class="btn btn-primary" id="btn-adjust-submit">✓ ব্যালেন্স সমন্বয় করুন</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD / EDIT GAME (Super Admin Only) -->
+  <div class="modal-backdrop" id="modal-game">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title"><span>🎮</span><span id="game-modal-title">নতুন গেম যোগ করুন</span></h3>
+        <button class="modal-close" onclick="closeModal('modal-game')">✕</button>
+      </div>
+      <form id="super-admin-game-form" onsubmit="handleSaveGame(event)">
+        <input type="hidden" id="form-game-id">
+        <div class="modal-body">
+          <div class="form-group">
+            <label>গেমের নাম (Game Name) *</label>
+            <input type="text" id="g-name" class="form-control" placeholder="যেমন: Aviator, JetX, Mines, Plinko..." required>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>ক্যাটাগরি *</label>
+              <select id="g-category" class="form-control" required>
+                <option value="Popular Games">Popular Games (জনপ্রিয় গেমস)</option>
+                <option value="Crash Games">Crash Games (ক্র্যাশ গেমস)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>স্ট্যাটাস *</label>
+              <select id="g-status" class="form-control" required>
+                <option value="Active">Active (সক্রিয়)</option>
+                <option value="Inactive">Inactive (নিষ্ক্রিয়)</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>গেমের ব্যানার / ছবি URL *</label>
+            <input type="url" id="g-image" class="form-control" placeholder="https://images.unsplash.com/... বা ছবির ওয়েব লিংক" required>
+          </div>
+          <div class="form-group">
+            <label>গেম প্লে URL (Game Play Link) *</label>
+            <input type="url" id="g-url" class="form-control" placeholder="https://... (Play Now বাটনে ক্লিক করলে যে লিংক লোড হবে)" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modal-game')">বাতিল</button>
+          <button type="submit" class="btn btn-primary" id="btn-save-game">💾 গেম সংরক্ষণ করুন</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- GAMES CONTROL CENTER START (MODAL) -->
+  <div id="gcc-modal">
+    <div class="gcc-dialog">
+      <h4 id="gcc-title">আপনি কি নিশ্চিত?</h4>
+      <p id="gcc-text"></p>
+      <div class="gcc-fields" id="gcc-fields">
+        <div class="form-group">
+          <label>Maintenance Message</label>
+          <textarea id="gcc-msg" class="form-control" rows="3" maxlength="300"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Estimated Return Time (ঐচ্ছিক)</label>
+          <input type="datetime-local" id="gcc-eta" class="form-control">
+        </div>
+      </div>
+      <div class="gcc-dialog-actions">
+        <button type="button" class="btn btn-secondary" id="gcc-cancel">বাতিল</button>
+        <button type="button" class="btn btn-primary" id="gcc-ok">হ্যাঁ, নিশ্চিত</button>
+      </div>
+    </div>
+  </div>
+  <!-- GAMES CONTROL CENTER END (MODAL) -->
+
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- SCRIPT -->
+  <script src="./firebase-config.js"></script>
+  <script>
+    const FIREBASE_CONFIG = window.NP_FIREBASE_CONFIG || {
+      apiKey: "AIzaSyBFaoU_cDws6YVAXFMWBnogGAQHhjfC23Q",
+      authDomain: "np-trunament-bd.firebaseapp.com",
+      databaseURL: "https://np-trunament-bd-default-rtdb.firebaseio.com",
+      projectId: "np-trunament-bd",
+      storageBucket: "np-trunament-bd.firebasestorage.app",
+      messagingSenderId: "324972484501",
+      appId: "1:324972484501:web:38598aa922e983990b889c"
+    };
+
+    let firebaseApp = null;
+    let auth = null;
+    let db = null;
+
+    try {
+      if (typeof firebase !== 'undefined') {
+        if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+        firebaseApp = firebase.app();
+        auth = firebase.auth();
+        db = firebase.database();
+      }
+    } catch (e) {
+      console.warn("Firebase Init Exception in NEXQIRO:", e);
+    }
+
+    const STATE = {
+      superAdminUser: { uid: '', email: '', role: '' }, // role admin/{uid} থেকে যাচাই হয়ে সেট হবে
+      masterWallet: { balance: 100000, totalCredits: 100000, totalDebits: 0 },
+      masterLedger: [],
+      fundRequests: [],
+      fundReqFilter: 'ALL',
+      adminWallets: {},
+      sites: [
+        { id: 'np-tournament-bd', name: 'NP TOURNAMENT BD', domain: 'np-trunament-bd.firebaseapp.com', status: 'Active', registeredAt: '2026-10-23' }
+      ],
+      auditLogs: [],
+      tournaments: [],
+      permissions: {
+        canCreateTournaments: true,
+        canEditTournaments: true,
+        canDeleteTournaments: true,
+        canSetupRoom: true,
+        canPublishRoom: true,
+        canDistributePrizes: true,
+        canManageGames: true,
+        canApproveDeposits: true,
+        canRejectDeposits: true,
+        canProcessWithdrawals: true,
+        canRejectWithdrawals: true,
+        canPublishNotices: true,
+        canSendNotifications: true,
+        canAdjustUserBalance: true,
+        canBanUsers: true,
+        canManagePaymentSettings: true,
+        canManageHelpline: true,
+        canManageBanners: true,
+        canManageHtmlAds: true,
+        canExportReports: true,
+        canViewAuditLogs: true,
+        canRequestFunds: true
+      }
+    };
+
+    function initFirebaseListeners() {
+      if (!db) return;
+
+      // 1. Master Wallet
+      db.ref('master_wallet').on('value', (snap) => {
+        if (snap.exists()) {
+          STATE.masterWallet = snap.val();
+        } else {
+          // Initialize default master reserve
+          db.ref('master_wallet').set(STATE.masterWallet);
+        }
+        updateMasterWalletUI();
+      });
+
+      // 2. Master Wallet Ledger
+      db.ref('master_wallet_ledger').on('value', (snap) => {
+        STATE.masterLedger = snap.exists() ? Object.keys(snap.val()).map(k => ({ id: k, ...snap.val()[k] })).reverse() : [];
+        renderMasterWallet();
+      });
+
+      // 3. Admin Fund Requests Hub
+      db.ref('admin_fund_requests').on('value', (snap) => {
+        STATE.fundRequests = snap.exists() ? Object.keys(snap.val()).map(k => ({ id: k, ...snap.val()[k] })).reverse() : [];
+        renderFundRequests();
+        updatePendingFundBadge();
+      });
+
+      // 4. Admin Wallets
+      db.ref('admin_wallets').on('value', (snap) => {
+        STATE.adminWallets = snap.exists() ? snap.val() : {};
+        renderAdminBalancesTable();
+      });
+
+      // 5. Audit Logs
+      db.ref('adminAuditLogs').limitToLast(50).on('value', (snap) => {
+        STATE.auditLogs = snap.exists() ? Object.keys(snap.val()).map(k => ({ id: k, ...snap.val()[k] })).reverse() : [];
+        renderAudit();
+      });
+
+      // 6. Tournaments
+      db.ref('tournaments').on('value', (snap) => {
+        STATE.tournaments = snap.exists() ? Object.keys(snap.val()).map(k => ({ id: k, ...snap.val()[k] })) : [];
+        const el = document.getElementById('dash-tourneys-count');
+        if (el) el.innerText = STATE.tournaments.length;
+      });
+
+      // 7. General Games (Super Admin Only Authority)
+      db.ref('games').on('value', (snap) => {
+        STATE.games = snap.exists() ? Object.keys(snap.val()).map(k => ({ id: k, ...snap.val()[k] })) : [];
+        renderGames();
+      });
+    }
+
+    function updateMasterWalletUI() {
+      const bal = parseFloat(STATE.masterWallet.balance) || 0;
+      const credits = parseFloat(STATE.masterWallet.totalCredits) || 0;
+      const debits = parseFloat(STATE.masterWallet.totalDebits) || 0;
+
+      const formattedBal = '৳ ' + bal.toLocaleString('en-US');
+      const elDash = document.getElementById('mw-dash-bal');
+      const elCredits = document.getElementById('mw-dash-credits');
+      const elDebits = document.getElementById('mw-dash-debits');
+      const elApprovedFunds = document.getElementById('dash-approved-funds');
+
+      if (elDash) elDash.innerText = formattedBal;
+      if (elCredits) elCredits.innerText = '৳ ' + credits.toLocaleString('en-US');
+      if (elDebits) elDebits.innerText = '৳ ' + debits.toLocaleString('en-US');
+      if (elApprovedFunds) elApprovedFunds.innerText = '৳ ' + debits.toLocaleString('en-US');
+    }
+
+    function updatePendingFundBadge() {
+      const pending = STATE.fundRequests.filter(r => r.status === 'Pending').length;
+      const badgeSide = document.getElementById('sidebar-fund-badge');
+      const badgeTop = document.getElementById('topbar-fund-badge');
+      const dashPending = document.getElementById('mw-dash-pending-cnt');
+
+      if (badgeSide) badgeSide.innerText = pending;
+      if (dashPending) dashPending.innerText = pending + ' টি';
+      if (badgeTop) {
+        if (pending > 0) {
+          badgeTop.style.display = 'block';
+          badgeTop.innerText = pending;
+        } else {
+          badgeTop.style.display = 'none';
+        }
+      }
+    }
+
+    // Render Master Wallet View
+    function renderMasterWallet() {
+      const tbody = document.getElementById('master-wallet-ledger-tbody');
+      if (!tbody) return;
+
+      if (STATE.masterLedger.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:20px; color:var(--text-dim);">কোনো মাস্টার লেনদেন লেজার নেই</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = STATE.masterLedger.map(l => `
+        <tr>
+          <td><small style="font-family:monospace; color:var(--purple);">${escapeHtml(l.trxId || l.id)}</small></td>
+          <td><span class="badge ${l.type === 'BALANCE_INJECTION' ? 'badge-approved' : 'badge-rejected'}">${escapeHtml(l.type || '')}</span></td>
+          <td><b style="font-family:var(--font-display); font-size:1.05rem;">৳ ${Number(l.amount || 0).toLocaleString('en-US')}</b></td>
+          <td>৳ ${l.beforeBal || 0}</td>
+          <td><b>৳ ${l.afterBal || 0}</b></td>
+          <td>${escapeHtml(l.targetAdminEmail || l.targetSiteId || 'Central')}</td>
+          <td style="font-size:0.8rem; color:var(--text-dim);">${l.date || 'সম্প্রতি'}</td>
+          <td><small style="color:var(--text-muted);">${escapeHtml(l.reason || '')}</small></td>
+        </tr>
+      `).join('');
+    }
+
+    // Render Fund Requests Hub (Super Admin Approves / Rejects)
+    function renderFundRequests() {
+      const container = document.getElementById('fund-requests-container');
+      const dashRecentContainer = document.getElementById('dash-recent-fund-requests-container');
+      const filter = STATE.fundReqFilter || 'ALL';
+
+      const filtered = STATE.fundRequests.filter(r => {
+        if (filter === 'PENDING') return r.status === 'Pending';
+        if (filter === 'APPROVED') return r.status === 'Approved';
+        if (filter === 'REJECTED') return r.status === 'Rejected';
+        return true;
+      });
+
+      // Render Dashboard Mini Feed
+      if (dashRecentContainer) {
+        const recentPending = STATE.fundRequests.slice(0, 3);
+        if (recentPending.length === 0) {
+          dashRecentContainer.innerHTML = `<div style="text-align:center; padding:16px; color:var(--text-dim);">কোনো সাম্প্রতিক ফান্ড আবেদন নেই</div>`;
+        } else {
+          dashRecentContainer.innerHTML = recentPending.map(r => `
+            <div style="background:var(--bg-surface); padding:10px 14px; border-radius:var(--radius-sm); border-left:3px solid ${r.status === 'Approved' ? 'var(--success)' : r.status === 'Pending' ? 'var(--warning)' : 'var(--accent)'}; display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <b>${escapeHtml(r.siteName || 'Site')}</b> — ৳ <span style="color:#c084fc; font-weight:700;">${Number(r.amount).toLocaleString('en-US')}</span>
+                <div style="font-size:0.75rem; color:var(--text-dim);">${escapeHtml(r.reason || '')}</div>
+              </div>
+              <span class="badge ${r.status === 'Approved' ? 'badge-approved' : r.status === 'Pending' ? 'badge-pending' : 'badge-rejected'}">${r.status}</span>
+            </div>
+          `).join('');
+        }
+      }
+
+      if (!container) return;
+      if (filtered.length === 0) {
+        container.innerHTML = `<div style="text-align:center; padding:30px; color:var(--text-dim);">কোনো ফান্ড রিকোয়েস্ট নেই</div>`;
+        return;
+      }
+
+      const masterBal = parseFloat(STATE.masterWallet.balance) || 0;
+
+      container.innerHTML = filtered.map(r => {
+        const isPending = r.status === 'Pending';
+        const cardClass = r.status === 'Approved' ? 'approved' : r.status === 'Rejected' ? 'rejected' : 'pending';
+        const badgeClass = r.status === 'Approved' ? 'badge-approved' : r.status === 'Rejected' ? 'badge-rejected' : 'badge-pending';
+        const targetAdminWallet = STATE.adminWallets[r.adminUid] || { balance: 0 };
+        const adminCurBal = targetAdminWallet.balance || 0;
+
+        return `
+          <div class="fund-req-card ${cardClass}">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:10px;">
+              <div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <b style="font-size:1.1rem; color:#fff;">${escapeHtml(r.siteName || 'NP TOURNAMENT BD')}</b>
+                  <span class="badge ${badgeClass}">${r.status}</span>
+                </div>
+                <div style="font-size:0.8rem; color:var(--text-dim); margin-top:2px;">
+                  Admin: <b>${escapeHtml(r.adminEmail || 'Admin')}</b> | UID: <span style="font-family:monospace;">${escapeHtml(r.adminUid || '')}</span>
+                </div>
+              </div>
+              <div style="text-align:right;">
+                <div style="font-size:0.75rem; color:var(--text-dim); text-transform:uppercase;">অনুরোধকৃত ফান্ড</div>
+                <div style="font-size:1.6rem; font-weight:700; color:#c084fc; font-family:var(--font-display);">
+                  ৳ ${Number(r.amount || 0).toLocaleString('en-US')}
+                </div>
+              </div>
+            </div>
+
+            <div style="background:var(--bg-surface); padding:10px 14px; border-radius:var(--radius-sm); border:1px solid var(--border-subtle); display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; font-size:0.85rem;">
+              <div><b>উদ্দেশ্য / কারণ:</b> ${escapeHtml(r.reason || '')}</div>
+              <div style="color:var(--text-dim);">রেফারেন্স: <span style="font-family:monospace;">${escapeHtml(r.reference || '-')}</span></div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; font-size:0.82rem; color:var(--text-muted);">
+              <div>
+                User Admin বর্তমান ব্যালেন্স: <b style="color:var(--primary);">৳ ${adminCurBal}</b> | 
+                Master Wallet ব্যালেন্স: <b style="color:${masterBal >= r.amount ? 'var(--success)' : 'var(--accent)'};">৳ ${masterBal}</b>
+              </div>
+              <div style="font-size:0.78rem; color:var(--text-dim);">তারিখ: ${r.createdAt ? new Date(r.createdAt).toLocaleString('bn-BD') : 'সম্প্রতি'}</div>
+            </div>
+
+            ${isPending ? `
+              <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:6px; border-top:1px solid var(--border-subtle); padding-top:10px;">
+                <button class="btn btn-accent btn-sm" onclick="handleRejectFundRequest('${r.id}')">
+                  ✕ Reject (প্রত্যাখ্যান)
+                </button>
+                <button class="btn btn-success btn-sm" onclick="handleApproveFundRequest('${r.id}')">
+                  ✓ Approve & Transfer (অনুমোদন ও বরাদ্দ)
+                </button>
+              </div>
+            ` : `
+              <div style="font-size:0.8rem; color:var(--text-dim); border-top:1px solid var(--border-subtle); padding-top:6px;">
+                সম্পন্নকারী: <b>${escapeHtml(r.processedBy || 'Super Admin')}</b> | নোট: ${escapeHtml(r.adminNote || 'N/A')}
+              </div>
+            `}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function filterFundReqs(filter) {
+      STATE.fundReqFilter = filter;
+      ['all', 'pending', 'approved', 'rejected'].forEach(f => {
+        const btn = document.getElementById(`btn-freq-${f}`);
+        if (btn) btn.className = `btn btn-sm ${f.toUpperCase() === filter ? 'btn-primary' : 'btn-secondary'}`;
+      });
+      renderFundRequests();
+    }
+
+    // ATOMIC APPROVAL: DEDUCT MASTER WALLET AND CREDIT USER ADMIN
+    async function handleApproveFundRequest(reqId) {
+      const r = STATE.fundRequests.find(item => item.id === reqId);
+      if (!r || !db) return;
+
+      const transferAmount = parseFloat(r.amount) || 0;
+      const currentMasterBal = parseFloat(STATE.masterWallet.balance) || 0;
+
+      // 1. Check Master Balance Sufficiency
+      if (currentMasterBal < transferAmount) {
+        alert(`❌ অপর্যাপ্ত মাস্টার ব্যালেন্স!\n\nঅনুরোধ: ৳ ${transferAmount}\nমাস্টার ওয়ালেটে আছে: ৳ ${currentMasterBal}\n\nআগে Master Wallet-এ ব্যালেন্স যোগ করুন।`);
+        openAdjustMasterWalletModal();
+        return;
+      }
+
+      if (!confirm(`আপনি কি নিশ্চিত যে ৳${transferAmount} অনুমোদন করে ${r.adminEmail}-এর এডমিন ওয়ালেটে পাঠাতে চান?\n\nএটি মাস্টার ওয়ালেট থেকে কর্তন করা হবে।`)) return;
+
+      try {
+        const superAdminEmail = STATE.superAdminUser.email;
+        const targetAdminUid = r.adminUid;
+        const targetAdminEmail = r.adminEmail;
+        const siteId = r.siteId || 'np-tournament-bd';
+
+        const masterNewBal = currentMasterBal - transferAmount;
+        const adminBeforeBal = (STATE.adminWallets[targetAdminUid] && STATE.adminWallets[targetAdminUid].balance) ? parseFloat(STATE.adminWallets[targetAdminUid].balance) : 0;
+        const adminNewBal = adminBeforeBal + transferAmount;
+
+        const masterLedgerKey = db.ref('master_wallet_ledger').push().key;
+        const adminLedgerKey = db.ref('admin_wallet_ledger').push().key;
+        const nowStr = new Date().toLocaleString('bn-BD');
+
+        const updates = {};
+        // 1. Update Master Wallet
+        updates['master_wallet/balance'] = masterNewBal;
+        updates['master_wallet/totalDebits'] = (parseFloat(STATE.masterWallet.totalDebits) || 0) + transferAmount;
+        updates['master_wallet/updatedAt'] = firebase.database.ServerValue.TIMESTAMP;
+
+        // 2. Update Target User Admin Wallet
+        updates[`admin_wallets/${targetAdminUid}/balance`] = adminNewBal;
+        updates[`admin_wallets/${targetAdminUid}/totalReceived`] = (STATE.adminWallets[targetAdminUid] ? (parseFloat(STATE.adminWallets[targetAdminUid].totalReceived) || 0) : 0) + transferAmount;
+        updates[`admin_wallets/${targetAdminUid}/adminEmail`] = targetAdminEmail;
+        updates[`admin_wallets/${targetAdminUid}/siteId`] = siteId;
+        updates[`admin_wallets/${targetAdminUid}/updatedAt`] = firebase.database.ServerValue.TIMESTAMP;
+
+        // 3. Mark Fund Request as Approved
+        updates[`admin_fund_requests/${reqId}/status`] = 'Approved';
+        updates[`admin_fund_requests/${reqId}/processedBy`] = superAdminEmail;
+        updates[`admin_fund_requests/${reqId}/processedAt`] = firebase.database.ServerValue.TIMESTAMP;
+        updates[`admin_fund_requests/${reqId}/masterTrxId`] = masterLedgerKey;
+        updates[`admin_fund_requests/${reqId}/adminTrxId`] = adminLedgerKey;
+
+        // 4. Ledger Entries
+        updates[`master_wallet_ledger/${masterLedgerKey}`] = {
+          trxId: masterLedgerKey,
+          type: 'FUND_ALLOCATION',
+          amount: transferAmount,
+          beforeBal: currentMasterBal,
+          afterBal: masterNewBal,
+          targetAdminEmail: targetAdminEmail,
+          targetSiteId: siteId,
+          requestId: reqId,
+          reason: `Approved fund request #${reqId}`,
+          processedBy: superAdminEmail,
+          timestamp: firebase.database.ServerValue.TIMESTAMP,
+          date: nowStr
+        };
+
+        updates[`admin_wallet_ledger/${adminLedgerKey}`] = {
+          trxId: adminLedgerKey,
+          adminUid: targetAdminUid,
+          adminEmail: targetAdminEmail,
+          siteId: siteId,
+          type: 'FUND_RECEIVED',
+          amount: transferAmount,
+          beforeBal: adminBeforeBal,
+          afterBal: adminNewBal,
+          referenceId: reqId,
+          note: `Allocated by NEXQIRO Super Admin (${superAdminEmail})`,
+          timestamp: firebase.database.ServerValue.TIMESTAMP,
+          date: nowStr
+        };
+
+        await db.ref().update(updates);
+
+        showToast(`🎉 ৳${transferAmount} সফলভাবে User Admin (${targetAdminEmail})-এর ওয়ালেটে স্থানান্তরিত হয়েছে!`, 'success');
+      } catch (err) {
+        showToast('অনুমোদনে সমস্যা: ' + err.message, 'error');
+      }
+    }
+
+    async function handleRejectFundRequest(reqId) {
+      const r = STATE.fundRequests.find(item => item.id === reqId);
+      if (!r || !db) return;
+
+      const reason = prompt(`রিকোয়েস্ট #${reqId} বাতিলের কারণ লিখুন:`, 'পর্যাপ্ত তথ্য নেই / এই মুহূর্তে বরাদ্দ সম্ভব নয়');
+      if (!reason) return;
+
+      try {
+        await db.ref(`admin_fund_requests/${reqId}`).update({
+          status: 'Rejected',
+          adminNote: reason,
+          processedBy: STATE.superAdminUser.email,
+          processedAt: firebase.database.ServerValue.TIMESTAMP
+        });
+
+        showToast(`ফান্ড রিকোয়েস্ট #${reqId} বাতিল করা হয়েছে।`, 'info');
+      } catch (err) {
+        showToast('বাতিল ব্যর্থ: ' + err.message, 'error');
+      }
+    }
+
+    // Render Admin Wallets Table
+    function renderAdminBalancesTable() {
+      const tbody = document.getElementById('admin-wallets-table-tbody');
+      const countEl = document.getElementById('dash-admins-count');
+      if (!tbody) return;
+
+      const keys = Object.keys(STATE.adminWallets);
+      if (countEl) countEl.innerText = Math.max(1, keys.length);
+
+      if (keys.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:20px; color:var(--text-dim);">কোনো User Admin ব্যালেন্স রেকর্ড নেই</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = keys.map(k => {
+        const w = STATE.adminWallets[k];
+        const bal = parseFloat(w.balance) || 0;
+        const rec = parseFloat(w.totalReceived) || 0;
+        const spent = parseFloat(w.totalSpent) || 0;
+        const dateStr = w.updatedAt ? new Date(w.updatedAt).toLocaleDateString('bn-BD') : 'সম্প্রতি';
+
+        return `
+          <tr>
+            <td><b>${escapeHtml(w.adminEmail || 'User Admin')}</b><br><small style="color:var(--text-dim);">${k}</small></td>
+            <td><span class="badge badge-purple">${escapeHtml(w.siteId || 'np-tournament-bd')}</span></td>
+            <td><b style="color:var(--primary); font-family:var(--font-display); font-size:1.15rem;">৳ ${bal.toLocaleString('en-US')}</b></td>
+            <td><b style="color:var(--success);">৳ ${rec.toLocaleString('en-US')}</b></td>
+            <td><b style="color:var(--accent);">৳ ${spent.toLocaleString('en-US')}</b></td>
+            <td><span class="badge badge-approved">Active</span></td>
+            <td style="font-size:0.8rem; color:var(--text-dim);">${dateStr}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Adjust Master Wallet Modal
+    function openAdjustMasterWalletModal() {
+      document.getElementById('master-wallet-adjust-form').reset();
+      openModal('modal-adjust-master-wallet');
+    }
+
+    async function handleAdjustMasterWallet(e) {
+      e.preventDefault();
+      const amount = parseFloat(document.getElementById('mw-adjust-amount').value);
+      const reason = document.getElementById('mw-adjust-reason').value.trim();
+
+      if (!amount || isNaN(amount) || amount === 0) {
+        showToast('সঠিক পরিমাণ লিখুন', 'error');
+        return;
+      }
+      if (!reason) {
+        showToast('কারণ লিখুন', 'error');
+        return;
+      }
+      if (!db) return;
+
+      const currentBal = parseFloat(STATE.masterWallet.balance) || 0;
+      const newBal = currentBal + amount;
+      if (newBal < 0) {
+        showToast('মাস্টার ব্যালেন্স ঋণাত্মক হতে পারে না!', 'error');
+        return;
+      }
+
+      const btn = document.getElementById('btn-adjust-submit');
+      btn.disabled = true;
+      btn.innerText = 'সমন্বয় হচ্ছে...';
+
+      try {
+        const ledgerKey = db.ref('master_wallet_ledger').push().key;
+        const nowStr = new Date().toLocaleString('bn-BD');
+
+        const updates = {};
+        updates['master_wallet/balance'] = newBal;
+        if (amount > 0) {
+          updates['master_wallet/totalCredits'] = (parseFloat(STATE.masterWallet.totalCredits) || 0) + amount;
+        } else {
+          updates['master_wallet/totalDebits'] = (parseFloat(STATE.masterWallet.totalDebits) || 0) + Math.abs(amount);
+        }
+        updates['master_wallet/updatedAt'] = firebase.database.ServerValue.TIMESTAMP;
+
+        updates[`master_wallet_ledger/${ledgerKey}`] = {
+          trxId: ledgerKey,
+          type: amount > 0 ? 'BALANCE_INJECTION' : 'BALANCE_RECOVERY',
+          amount: Math.abs(amount),
+          beforeBal: currentBal,
+          afterBal: newBal,
+          reason,
+          processedBy: STATE.superAdminUser.email,
+          timestamp: firebase.database.ServerValue.TIMESTAMP,
+          date: nowStr
+        };
+
+        await db.ref().update(updates);
+        showToast(`মাস্টার ব্যালেন্স সফলভাবে সমন্বয় হয়েছে! নতুন ব্যালেন্স: ৳${newBal}`, 'success');
+        closeModal('modal-adjust-master-wallet');
+      } catch (err) {
+        showToast('ব্যালেন্স সমন্বয় ব্যর্থ: ' + err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerText = '✓ ব্যালেন্স সমন্বয় করুন';
+      }
+    }
+
+    // Render Permissions
+    function renderPermissions() {
+      const container = document.getElementById('permissions-grid-container');
+      if (!container) return;
+
+      container.innerHTML = Object.keys(STATE.permissions).map(key => `
+        <div class="perm-toggle-item">
+          <div>
+            <b style="font-size:0.88rem; color:#fff;">${formatPermLabel(key)}</b>
+            <div style="font-size:0.72rem; color:var(--text-dim); font-family:monospace;">${key}</div>
+          </div>
+          <input type="checkbox" ${STATE.permissions[key] ? 'checked' : ''} onchange="togglePerm('${key}', this.checked)" style="transform:scale(1.3); cursor:pointer;">
+        </div>
+      `).join('');
+    }
+
+    function formatPermLabel(k) {
+      return k.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+    }
+
+    function togglePerm(k, val) {
+      STATE.permissions[k] = val;
+      showToast(`${formatPermLabel(k)}: ${val ? 'চালু' : 'বন্ধ'}`, val ? 'success' : 'info');
+    }
+
+    // --- Super Admin General Game Management ---
+    function renderGames() {
+      const tbody = document.getElementById('games-table-tbody');
+      if (!tbody) return;
+      if (!STATE.games || STATE.games.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:24px; color:var(--text-dim);">কোনো গেম নেই। উপরে "+ নতুন গেম যোগ করুন" বাটনে ক্লিক করুন।</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = STATE.games.map(g => {
+        const isActive = g.status === 'Active';
+        return `
+          <tr>
+            <td>
+              <img src="${escapeHtml(g.image || g.imageUrl || '')}" style="width:50px; height:32px; object-fit:cover; border-radius:4px;" onerror="this.src='https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=400&q=80'">
+            </td>
+            <td>
+              <b>${escapeHtml(g.name || '')}</b>
+              <div style="font-size:0.7rem; color:var(--text-dim); font-family:monospace;">${escapeHtml(g.id)}</div>
+            </td>
+            <td><span class="badge ${g.category && g.category.includes('Crash') ? 'badge-rejected' : 'badge-purple'}">${escapeHtml(g.category || '')}</span></td>
+            <td><small style="color:var(--info); font-family:monospace;">${escapeHtml(g.url || g.gameUrl || '')}</small></td>
+            <td><span class="badge ${isActive ? 'badge-approved' : 'badge-rejected'}">${g.status || 'Active'}</span></td>
+            <td style="text-align:right;">
+              <button class="btn btn-sm ${isActive ? 'btn-secondary' : 'btn-success'}" onclick="toggleGameStatus('${g.id}')">${isActive ? 'নিষ্ক্রিয়' : 'সক্রিয়'}</button>
+              <button class="btn btn-sm btn-outline" onclick="openEditGameModal('${g.id}')">এডিট</button>
+              <button class="btn btn-sm btn-accent" onclick="deleteGame('${g.id}')">ডিলিট</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function openCreateGameModal() {
+      document.getElementById('super-admin-game-form').reset();
+      document.getElementById('form-game-id').value = '';
+      document.getElementById('game-modal-title').innerText = 'নতুন গেম যোগ করুন';
+      document.getElementById('btn-save-game').innerText = '💾 গেম সংরক্ষণ করুন';
+      openModal('modal-game');
+    }
+
+    function openEditGameModal(id) {
+      const g = STATE.games.find(item => item.id === id);
+      if (!g) return;
+      document.getElementById('form-game-id').value = g.id;
+      document.getElementById('game-modal-title').innerText = `গেম সম্পাদনা: ${g.name || ''}`;
+      document.getElementById('g-name').value = g.name || '';
+      document.getElementById('g-category').value = g.category || 'Popular Games';
+      document.getElementById('g-status').value = g.status || 'Active';
+      document.getElementById('g-image').value = g.image || g.imageUrl || '';
+      document.getElementById('g-url').value = g.url || g.gameUrl || '';
+      document.getElementById('btn-save-game').innerText = '💾 গেম আপডেট করুন';
+      openModal('modal-game');
+    }
+
+    async function handleSaveGame(e) {
+      e.preventDefault();
+      const id = document.getElementById('form-game-id').value;
+      const name = document.getElementById('g-name').value.trim();
+      const category = document.getElementById('g-category').value;
+      const status = document.getElementById('g-status').value;
+      const image = document.getElementById('g-image').value.trim();
+      const url = document.getElementById('g-url').value.trim();
+      if (!db || !name || !url) return;
+
+      const gameData = {
+        name, category, status, image, imageUrl: image, url, gameUrl: url,
+        active: status === 'Active',
+        updatedAt: firebase.database.ServerValue.TIMESTAMP
+      };
+
+      try {
+        if (id) {
+          gameData.id = id;
+          await db.ref(`games/${id}`).update(gameData);
+          showToast(`গেম "${name}" সফলভাবে আপডেট করা হয়েছে!`, 'success');
+        } else {
+          const newKey = db.ref('games').push().key;
+          gameData.id = newKey;
+          gameData.createdAt = firebase.database.ServerValue.TIMESTAMP;
+          await db.ref(`games/${newKey}`).set(gameData);
+          showToast(`নতুন গেম "${name}" সফলভাবে যুক্ত হয়েছে!`, 'success');
+        }
+        closeModal('modal-game');
+      } catch (err) {
+        showToast('সংরক্ষণ ব্যর্থ: ' + err.message, 'error');
+      }
+    }
+
+    async function toggleGameStatus(id) {
+      const g = STATE.games.find(item => item.id === id);
+      if (!g || !db) return;
+      const newStatus = g.status === 'Active' ? 'Inactive' : 'Active';
+      try {
+        await db.ref(`games/${id}`).update({ status: newStatus, active: newStatus === 'Active', updatedAt: firebase.database.ServerValue.TIMESTAMP });
+        showToast(`"${g.name}" স্ট্যাটাস: ${newStatus}`, 'success');
+      } catch (err) {
+        showToast('ব্যর্থ: ' + err.message, 'error');
+      }
+    }
+
+    async function deleteGame(id) {
+      if (!confirm('আপনি কি নিশ্চিত যে এই গেমটি মুছে ফেলতে চান?')) return;
+      if (!db || !id) return;
+      try {
+        await db.ref(`games/${id}`).remove();
+        showToast('গেম সফলভাবে মুছে ফেলা হয়েছে!', 'info');
+      } catch (err) {
+        showToast('মুছতে ব্যর্থ: ' + err.message, 'error');
+      }
+    }
+
+    function renderSites() {
+      const tbody = document.getElementById('sites-table-tbody');
+      if (!tbody) return;
+      tbody.innerHTML = STATE.sites.map(s => `
+        <tr>
+          <td><b>${escapeHtml(s.id)}</b></td>
+          <td><b>${escapeHtml(s.name)}</b></td>
+          <td><small style="color:var(--info);">${escapeHtml(s.domain)}</small></td>
+          <td><span class="badge badge-approved">${s.status}</span></td>
+          <td>${s.registeredAt}</td>
+        </tr>
+      `).join('');
+    }
+
+    function renderAudit() {
+      const tbody = document.getElementById('audit-table-tbody');
+      if (!tbody) return;
+      tbody.innerHTML = STATE.auditLogs.map(l => `
+        <tr>
+          <td><b>${escapeHtml(l.admin)}</b></td>
+          <td><span class="badge badge-purple">${escapeHtml(l.action)}</span></td>
+          <td><small style="font-family:monospace;">${escapeHtml(l.target || '')}</small></td>
+          <td>${escapeHtml(l.details || '')}</td>
+          <td>${l.time || 'সম্প্রতি'}</td>
+        </tr>
+      `).join('');
+    }
+
+    function switchView(viewId) {
+      document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
+      const target = document.getElementById(viewId);
+      if (target) target.classList.add('active');
+
+      document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.toggle('active', item.getAttribute('data-view') === viewId);
+      });
+      document.getElementById('sidebar').classList.remove('open');
+    }
+
+    function selectActiveSite(val) {
+      const el = document.getElementById('active-site-indicator');
+      if (el) el.innerText = val === 'ALL' ? 'সকল সাইট' : val;
+      showToast(`টার্গেট সাইট: ${val}`, 'info');
+    }
+
+    function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
+    function openModal(id) { const m = document.getElementById(id); if (m) m.classList.add('active'); }
+    function closeModal(id) { const m = document.getElementById(id); if (m) m.classList.remove('active'); }
+
+    function showToast(msg, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.innerHTML = `<span>${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'}</span><div>${escapeHtml(msg)}</div>`;
+      container.appendChild(toast);
+      setTimeout(() => { toast.remove(); }, 3500);
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    /* ROLE CHECK START: admin/{uid} থেকে SUPER_ADMIN যাচাই (Firebase Rules + Backend-ও আলাদাভাবে যাচাই করে) */
+    const _roleCache = {};
+    window.NEXQIRO_roleCheck = function (user) {
+      if (!user || !db) return Promise.resolve(false);
+      if (_roleCache[user.uid]) return _roleCache[user.uid];
+      _roleCache[user.uid] = db.ref('admin/' + user.uid).once('value').then(function (snap) {
+        const rec = snap.val();
+        const ok = !!(rec && rec.role === 'SUPER_ADMIN' && rec.status === 'active');
+        window.NEXQIRO_IS_SUPER = ok ? user.uid : '';
+        STATE.superAdminUser.role = ok ? 'SUPER_ADMIN' : '';
+        return ok;
+      }).catch(function (e) {
+        console.error('Role check failed:', e);
+        window.NEXQIRO_IS_SUPER = '';
+        delete _roleCache[user.uid];
+        return false;
+      });
+      return _roleCache[user.uid];
+    };
+    /* ROLE CHECK END */
+
+    async function handleSuperAdminLogin(e) {
+      e.preventDefault();
+      const inputVal = document.getElementById('login-email').value.trim();
+      const pass = document.getElementById('login-password').value;
+      if (!auth) return;
+
+      let email = inputVal;
+      if (!email.includes('@')) {
+        showToast('অনুগ্রহ করে সম্পূর্ণ ইমেইল ঠিকানা দিন', 'error');
+        return;
+      }
+
+      try {
+        const cred = await auth.signInWithEmailAndPassword(email, pass);
+        if (!(await window.NEXQIRO_roleCheck(cred.user))) {
+          await auth.signOut();
+          showToast('এই অ্যাকাউন্টের Super Admin অনুমতি নেই', 'error');
+          return;
+        }
+        STATE.superAdminUser.uid = cred.user.uid;
+        STATE.superAdminUser.email = cred.user.email;
+        document.getElementById('sidebar-email').innerText = cred.user.email;
+        document.getElementById('login-overlay').style.display = 'none';
+
+        initFirebaseListeners();
+        showToast(`স্বাগতম, Master Super Admin ${cred.user.email}!`, 'success');
+      } catch (err) {
+        showToast('লগইন ব্যর্থ: ' + err.message, 'error');
+      }
+    }
+
+    function handleLogout() {
+      if (confirm('NEXQIRO Super Admin থেকে লগআউট করতে চান?')) {
+        if (auth) auth.signOut();
+        document.getElementById('login-overlay').style.display = 'flex';
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      if (auth) {
+        auth.onAuthStateChanged(async user => {
+          if (user && !(await window.NEXQIRO_roleCheck(user))) {
+            await auth.signOut();
+            showToast('এই অ্যাকাউন্টের Super Admin অনুমতি নেই', 'error');
+            return;
+          }
+          if (user) {
+            STATE.superAdminUser.uid = user.uid;
+            STATE.superAdminUser.email = user.email;
+            document.getElementById('sidebar-email').innerText = user.email;
+            document.getElementById('login-overlay').style.display = 'none';
+            initFirebaseListeners();
+          } else {
+            document.getElementById('login-overlay').style.display = 'flex';
+          }
+        });
+      }
+    });
+
+    /* GAMES CONTROL CENTER START (JS) - বিদ্যমান গেম টেবিলে Maintenance কলাম/বাটন যোগ করে; বিদ্যমান কোড অপরিবর্তিত */
+    (function () {
+      'use strict';
+
+      var DEFAULT_MSG = 'আমরা গেমটি আরও ভালো করার কাজ করছি। অনুগ্রহ করে কিছুক্ষণ পর আবার চেষ্টা করুন।';
+
+      var gamesData = {};
+      var gamesRef = null;
+      var observer = null;
+      var pending = null;   // { mode, ids }
+      var busy = false;
+
+      function $(id) { return document.getElementById(id); }
+      function isSuper(user) { return !!(user && window.NEXQIRO_IS_SUPER && window.NEXQIRO_IS_SUPER === user.uid); }
+      function canManage() { return isSuper(auth && auth.currentUser); }
+
+      function maint(id) {
+        var g = gamesData[id];
+        return (g && typeof g === 'object' && g.maintenance && typeof g.maintenance === 'object') ? g.maintenance : {};
+      }
+      function gameName(id) { var g = gamesData[id]; return (g && g.name) || id; }
+
+      function toLocalInput(ms) {
+        if (!ms || isNaN(Number(ms))) return '';
+        var d = new Date(Number(ms));
+        return new Date(Number(ms) - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+      }
+
+      function rowId(tr) {
+        var b = tr.querySelector('button[onclick^="toggleGameStatus"]');
+        if (!b) return null;
+        var m = /toggleGameStatus\('([^']+)'\)/.exec(b.getAttribute('onclick') || '');
+        return m ? m[1] : null;
+      }
+
+      function visibleIds() {
+        var tbody = $('games-table-tbody');
+        var ids = [];
+        if (!tbody) return ids;
+        Array.prototype.forEach.call(tbody.querySelectorAll('tr'), function (tr) { var id = rowId(tr); if (id) ids.push(id); });
+        return ids;
+      }
+
+      /* ---------- টেবিলে কলাম যোগ ---------- */
+      function ensureHeader() {
+        var tr = document.querySelector('#view-games thead tr');
+        if (!tr) return;
+        var existing = tr.querySelector('.gcc-th');
+        if (!canManage()) { if (existing) existing.remove(); return; }
+        if (existing) return;
+        var th = document.createElement('th');
+        th.className = 'gcc-th';
+        th.textContent = 'Maintenance';
+        var ths = tr.querySelectorAll('th');
+        tr.insertBefore(th, ths[4] || null);   // URL এবং স্ট্যাটাসের মাঝখানে
+      }
+
+      function cellHtml(id) {
+        var on = maint(id).enabled === true;
+        return '<div class="gcc-cell-inner">' +
+          '<label class="gcc-switch"><input type="checkbox" class="gcc-toggle"' + (on ? ' checked' : '') + '><span class="gcc-slider"></span></label>' +
+          '<span class="gcc-pill ' + (on ? 'maint' : 'live') + '">' + (on ? '🔴 Maintenance' : '🟢 Live') + '</span>' +
+          '<button type="button" class="btn btn-sm btn-outline gcc-edit" title="মেসেজ ও সময় সম্পাদনা">⚙️</button>' +
+          '</div>';
+      }
+
+      function refresh() {
+        var tbody = $('games-table-tbody');
+        if (!tbody) return;
+        ensureHeader();
+        var allowed = canManage();
+        Array.prototype.forEach.call(tbody.querySelectorAll('tr'), function (tr) {
+          var id = rowId(tr);
+          var cell = tr.querySelector('.gcc-cell');
+          if (!id || !allowed) { if (cell) cell.remove(); return; }
+          if (!cell) {
+            cell = document.createElement('td');
+            cell.className = 'gcc-cell';
+            var tds = tr.querySelectorAll('td');
+            tr.insertBefore(cell, tds[4] || null);   // স্ট্যাটাস কলামের আগে
+          }
+          cell.setAttribute('data-gid', id);
+          cell.innerHTML = cellHtml(id);
+        });
+      }
+
+      function ensureBulk() {
+        var wrap = $('gcc-bulk');
+        if (!canManage()) { if (wrap) wrap.remove(); return; }
+        if (wrap) return;
+        var toolbar = document.querySelector('#view-games .toolbar');
+        if (!toolbar) return;
+        wrap = document.createElement('div');
+        wrap.id = 'gcc-bulk';
+        wrap.className = 'gcc-bulk';
+        wrap.innerHTML =
+          '<button type="button" class="btn btn-accent" data-gcc-bulk="on">🛠 সব গেম Maintenance করুন</button>' +
+          '<button type="button" class="btn btn-success" data-gcc-bulk="off">🟢 সব গেম চালু করুন</button>';
+        toolbar.insertAdjacentElement('afterend', wrap);
+      }
+
+      /* ---------- ডায়ালগ ---------- */
+      function validEta() {
+        var v = $('gcc-eta').value;
+        if (!v) return { ok: true, value: null };
+        var t = new Date(v).getTime();
+        if (isNaN(t)) return { ok: true, value: null };
+        return { ok: true, value: t };
+      }
+
+      function openDialog(cfg) {
+        pending = cfg;
+        $('gcc-title').textContent = cfg.title;
+        $('gcc-text').textContent = cfg.text;
+        $('gcc-fields').style.display = cfg.fields ? 'flex' : 'none';
+        if (cfg.fields) {
+          var base = maint(cfg.ids[0]);
+          var sameForAll = cfg.ids.length === 1;
+          $('gcc-msg').value = (sameForAll && base.message) ? base.message : DEFAULT_MSG;
+          $('gcc-eta').value = sameForAll ? toLocalInput(base.estimatedReturn) : '';
+        }
+        $('gcc-modal').classList.add('active');
+      }
+
+      function closeDialog() {
+        pending = null;
+        var m = $('gcc-modal');
+        if (m) m.classList.remove('active');
+      }
+
+      /* ---------- সেভ + অডিট লগ (একটি atomic update) ---------- */
+      async function apply(changes, kind) {
+        var user = auth && auth.currentUser;
+        if (!db || !isSuper(user)) { showToast('শুধু Super Admin এই পরিবর্তন করতে পারবেন', 'error'); return false; }
+        var ts = firebase.database.ServerValue.TIMESTAMP;
+        var nowStr = new Date().toLocaleString('en-GB');
+        var updates = {};
+        changes.forEach(function (c) {
+          updates['games/' + c.id + '/maintenance'] = {
+            enabled: c.enabled,
+            message: c.message,
+            estimatedReturn: c.estimatedReturn || null,
+            updatedBy: user.uid,
+            updatedAt: ts
+          };
+          var logKey = db.ref('adminAuditLogs').push().key;
+          updates['adminAuditLogs/' + logKey] = {
+            admin: user.email,
+            adminUid: user.uid,
+            action: kind === 'save' ? 'GAME_MAINTENANCE_UPDATE' : (c.enabled ? 'GAME_MAINTENANCE_ON' : 'GAME_MAINTENANCE_OFF'),
+            target: 'games/' + c.id,
+            gameId: c.id,
+            enabled: c.enabled,
+            details: gameName(c.id) + ' → Maintenance ' + (c.enabled ? 'ON' : 'OFF') + (kind === 'save' ? ' (বার্তা/সময় আপডেট)' : ''),
+            time: nowStr,
+            timestamp: ts
+          };
+        });
+        try {
+          await db.ref().update(updates);
+          showToast(kind === 'save' ? 'সেভ হয়েছে' : 'Maintenance স্ট্যাটাস আপডেট হয়েছে', 'success');
+          return true;
+        } catch (err) {
+          showToast('সংরক্ষণ ব্যর্থ: ' + err.message, 'error');
+          return false;
+        }
+      }
+
+      function buildChanges(cfg) {
+        var msgIn = ($('gcc-msg').value || '').trim() || DEFAULT_MSG;
+        var eta = validEta().value;
+        return cfg.ids.map(function (id) {
+          var m = maint(id);
+          if (cfg.mode === 'save') {
+            return { id: id, enabled: m.enabled === true, message: msgIn, estimatedReturn: eta };
+          }
+          if (cfg.enable) {
+            return { id: id, enabled: true, message: msgIn, estimatedReturn: eta };
+          }
+          return { id: id, enabled: false, message: m.message || DEFAULT_MSG, estimatedReturn: null };
+        });
+      }
+
+      function bind() {
+        var tbody = $('games-table-tbody');
+        if (tbody) {
+          tbody.addEventListener('change', function (e) {
+            var cb = e.target.closest ? e.target.closest('.gcc-toggle') : null;
+            if (!cb) return;
+            var id = cb.closest('.gcc-cell').getAttribute('data-gid');
+            var want = cb.checked;
+            cb.checked = !want;   // নিশ্চিত না হওয়া পর্যন্ত আগের অবস্থায়
+            openDialog({
+              mode: 'toggle', enable: want, ids: [id], fields: want,
+              title: want ? 'Maintenance চালু করবেন?' : 'গেম আবার চালু করবেন?',
+              text: 'আপনি কি নিশ্চিত? "' + gameName(id) + '" ' + (want ? 'Maintenance-এ যাবে, ইউজাররা খেলতে পারবে না।' : 'আবার ইউজারদের জন্য চালু হবে।')
+            });
+          });
+          tbody.addEventListener('click', function (e) {
+            var btn = e.target.closest ? e.target.closest('.gcc-edit') : null;
+            if (!btn) return;
+            var id = btn.closest('.gcc-cell').getAttribute('data-gid');
+            openDialog({
+              mode: 'save', ids: [id], fields: true,
+              title: 'মেসেজ ও সময় সেভ করবেন?',
+              text: '"' + gameName(id) + '" এর Maintenance মেসেজ ও Estimated Return Time আপডেট হবে।'
+            });
+          });
+          observer = new MutationObserver(function () { refresh(); });
+          observer.observe(tbody, { childList: true });
+        }
+
+        var view = $('view-games');
+        if (view) {
+          view.addEventListener('click', function (e) {
+            var b = e.target.closest ? e.target.closest('[data-gcc-bulk]') : null;
+            if (!b) return;
+            var on = b.getAttribute('data-gcc-bulk') === 'on';
+            var ids = visibleIds();
+            if (!ids.length) { showToast('কোনো গেম নেই', 'error'); return; }
+            openDialog({
+              mode: 'bulk', enable: on, ids: ids, fields: on,
+              title: on ? 'সব গেম Maintenance করবেন?' : 'সব গেম চালু করবেন?',
+              text: 'আপনি কি নিশ্চিত? ' + ids.length + 'টি গেমের স্ট্যাটাস একসাথে ' + (on ? 'Maintenance' : 'Live') + ' করা হবে।'
+            });
+          });
+        }
+
+        $('gcc-cancel').addEventListener('click', closeDialog);
+        $('gcc-modal').addEventListener('click', function (e) { if (e.target === this) closeDialog(); });
+        $('gcc-ok').addEventListener('click', async function () {
+          if (busy || !pending) return;
+          var cfg = pending;
+          if (cfg.fields) {
+            var eta = validEta().value;
+            var willBeOn = cfg.mode === 'save' ? maint(cfg.ids[0]).enabled === true : cfg.enable;
+            if (willBeOn && eta && eta <= Date.now()) { showToast('Estimated Return Time অবশ্যই ভবিষ্যতের সময় হতে হবে', 'error'); return; }
+          }
+          busy = true;
+          var btn = this;
+          btn.disabled = true;
+          var ok = await apply(buildChanges(cfg), cfg.mode === 'save' ? 'save' : 'toggle');
+          btn.disabled = false;
+          busy = false;
+          if (ok) closeDialog();
+        });
+      }
+
+      function detach() { if (gamesRef) { gamesRef.off('value'); gamesRef = null; } }
+
+      function attach() {
+        detach();
+        gamesRef = db.ref('games');
+        gamesRef.on('value', function (snap) {
+          gamesData = snap.exists() ? snap.val() : {};
+          refresh();
+        }, function (err) {
+          showToast('Maintenance ডাটা লোড ব্যর্থ: ' + err.message, 'error');
+        });
+      }
+
+      function init() {
+        if (!auth || !db) return;
+        bind();
+        auth.onAuthStateChanged(async function (user) {
+          detach();
+          if (user) { await window.NEXQIRO_roleCheck(user); }
+          if (isSuper(user)) { attach(); } else { gamesData = {}; }
+          ensureBulk();
+          refresh();
+        });
+      }
+
+      init();
+    })();
+    /* GAMES CONTROL CENTER END (JS) */
+  </script>
+</body>
+</html>

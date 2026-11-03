@@ -1,0 +1,11 @@
+// Firebase Web Config (এটা গোপন কী নয়, GitHub-এ রাখা যাবে)
+window.NP_FIREBASE_CONFIG = {
+  apiKey: "AIzaSyACrBX4gUnoaTEnqvUti8U4ZP7BjC7VkyA",
+  authDomain: "nexqiro-master-admin.firebaseapp.com",
+  databaseURL: "https://nexqiro-master-admin-default-rtdb.firebaseio.com",
+  projectId: "nexqiro-master-admin",
+  storageBucket: "nexqiro-master-admin.firebasestorage.app",
+  messagingSenderId: "266672416984",
+  appId: "1:266672416984:web:e2821653c6f4efc71a8fad",
+  measurementId: "G-B6QDDSK3LC"
+};
