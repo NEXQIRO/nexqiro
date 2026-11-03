@@ -230,12 +230,12 @@
       
       <form id="super-admin-login-form" onsubmit="handleSuperAdminLogin(event)">
         <div class="form-group" style="text-align:left; margin-bottom:14px;">
-          <label>Super Admin ইমেইল বা ইউজারনেম</label>
-          <input type="text" id="login-email" class="form-control" placeholder="Mijanbabu2015@gmail.com / admin" value="Mijanbabu2015@gmail.com" required autocomplete="username">
+          <label>Super Admin ইমেইল</label>
+          <input type="email" id="login-email" class="form-control" placeholder="যেমন: Mijanbabu2015@gmail.com" value="Mijanbabu2015@gmail.com" required autocomplete="username">
         </div>
         <div class="form-group" style="text-align:left; margin-bottom:20px;">
           <label>সিকিউরিটি পাসওয়ার্ড</label>
-          <input type="password" id="login-password" class="form-control" placeholder="••••••••" value="admin12345" required autocomplete="current-password">
+          <input type="password" id="login-password" class="form-control" placeholder="আপনার সঠিক পাসওয়ার্ড লিখুন" required autocomplete="current-password">
         </div>
         <button type="submit" class="btn btn-primary" id="btn-login" style="width:100%;">
           🔐 লগইন করুন (Master Sign In)
@@ -843,8 +843,10 @@
       }
     };
 
+    let firebaseListenersInitialized = false;
     function initFirebaseListeners() {
-      if (!db) return;
+      if (!db || firebaseListenersInitialized) return;
+      firebaseListenersInitialized = true;
 
       // 1. Master Wallet
       db.ref('master_wallet').on('value', (snap) => {
@@ -1575,7 +1577,17 @@
         checkBackendHealth();
         showToast(`🎉 স্বাগতম, Master Super Admin (${cred.user.email})!`, 'success');
       } catch (err) {
-        showToast('লগইন ব্যর্থ: ' + err.message, 'error');
+        let msg = err.message;
+        if (err.code === 'auth/invalid-credential' || (err.message && err.message.includes('invalid-credential'))) {
+          msg = 'ইমেইল অথবা পাসওয়ার্ড ভুল হয়েছে! অনুগ্রহ করে সঠিক পাসওয়ার্ড লিখুন।';
+        } else if (err.code === 'auth/user-not-found') {
+          msg = 'এই ইমেইল দিয়ে কোনো ইউজার পাওয়া যায়নি।';
+        } else if (err.code === 'auth/wrong-password') {
+          msg = 'পাসওয়ার্ড ভুল হয়েছে! অনুগ্রহ করে আবার চেষ্টা করুন।';
+        } else if (err.code === 'auth/too-many-requests') {
+          msg = 'বারবার ভুল চেষ্টার কারণে একাউন্ট সাময়িকভাবে ব্লক হয়েছে। কিছুক্ষণ পর চেষ্টা করুন।';
+        }
+        showToast('লগইন ব্যর্থ: ' + msg, 'error');
       } finally {
         isSigningIn = false;
         btn.disabled = false;
@@ -1592,6 +1604,7 @@
         }
         STATE.superAdminUser = { uid: '', email: '', role: '' };
         window.NEXQIRO_IS_SUPER = '';
+        firebaseListenersInitialized = false;
         document.getElementById('login-overlay').style.display = 'flex';
         showToast('সফলভাবে লগআউট সম্পন্ন হয়েছে।', 'info');
       }
@@ -1875,16 +1888,41 @@
         });
       }
 
-      function detach() { if (gamesRef) { gamesRef.off('value'); gamesRef = null; } }
+      var retryTimer = null;
+      var retryCount = 0;
+
+      function detach() {
+        if (retryTimer) { clearTimeout(retryTimer); retryTimer = null; }
+        if (gamesRef) { gamesRef.off('value'); gamesRef = null; }
+      }
 
       function attach() {
         detach();
+        if (!auth || !auth.currentUser || !isSuper(auth.currentUser)) return;
+
         gamesRef = db.ref('games');
         gamesRef.on('value', function (snap) {
+          retryCount = 0;
           gamesData = snap.exists() ? snap.val() : {};
           refresh();
         }, function (err) {
-          showToast('Maintenance ডাটা লোড ব্যর্থ: ' + err.message, 'error');
+          var isPermDenied = err && (err.code === 'PERMISSION_DENIED' || (err.message && err.message.toLowerCase().includes('permission_denied')));
+          // Firebase RTDB WebSocket auth handshake takes a moment to sync after initial login.
+          // Retry smoothly without displaying an alarming error toast to the user.
+          if (isPermDenied && retryCount < 3 && auth && auth.currentUser) {
+            retryCount++;
+            console.warn('Realtime Database auth sync pending, retrying games listener (' + retryCount + '/3)...');
+            retryTimer = setTimeout(function () {
+              if (auth && auth.currentUser && isSuper(auth.currentUser)) {
+                attach();
+              }
+            }, 1000);
+            return;
+          }
+          console.warn('Games maintenance listener notice:', err.message);
+          if (!isPermDenied) {
+            showToast('Maintenance ডাটা লোড ব্যর্থ: ' + err.message, 'error');
+          }
         });
       }
 
@@ -1893,8 +1931,18 @@
         bind();
         auth.onAuthStateChanged(async function (user) {
           detach();
-          if (user) { await window.NEXQIRO_roleCheck(user); }
-          if (isSuper(user)) { attach(); } else { gamesData = {}; }
+          retryCount = 0;
+          if (user) {
+            await window.NEXQIRO_roleCheck(user);
+            if (isSuper(user)) {
+              // Wait 400ms for Firebase Realtime Database WebSocket to finish authenticating
+              setTimeout(attach, 400);
+            } else {
+              gamesData = {};
+            }
+          } else {
+            gamesData = {};
+          }
           ensureBulk();
           refresh();
         });
