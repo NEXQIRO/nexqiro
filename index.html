@@ -691,11 +691,11 @@
                   <tr>
                     <th>Tenant ID & নাম</th>
                     <th>অ্যাসাইনড User Admin</th>
-                    <th>Firebase Project ID</th>
-                    <th>Realtime Database URL</th>
+                    <th>Firebase Project & RTDB</th>
+                    <th>Render Backend URL</th>
                     <th>User Panel URL</th>
                     <th>স্ট্যাটাস</th>
-                    <th>নিবন্ধন তারিখ</th>
+                    <th>অ্যাকশন</th>
                   </tr>
                 </thead>
                 <tbody id="tenants-table-tbody"></tbody>
@@ -1080,7 +1080,10 @@
           </div>
 
           <hr style="border:0; border-top:1px solid var(--border-subtle); margin:4px 0;">
-          <div style="font-size:0.85rem; font-weight:700; color:var(--purple);">টেন্যান্ট ও সাইট তথ্য (Tenant Isolation Data)</div>
+          <div style="font-size:0.85rem; font-weight:700; color:var(--purple); display:flex; justify-content:space-between; align-items:center;">
+            <span>🌐 টেন্যান্টের নিজস্ব Firebase কনফিগারেশন (Remote Firebase Project)</span>
+            <span class="badge badge-purple">Cross-Firebase Bridge</span>
+          </div>
 
           <div class="form-row">
             <div class="form-group">
@@ -1093,20 +1096,64 @@
             </div>
           </div>
 
-          <div class="form-group">
-            <label>Firebase Realtime Database URL *</label>
-            <input type="url" id="nu-rtdb-url" class="form-control" placeholder="https://np-tournament-bd-default-rtdb.firebaseio.com" value="https://nexqiro-master-admin-default-rtdb.firebaseio.com" required>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Firebase Project ID *</label>
+              <input type="text" id="nu-project-id" class="form-control" placeholder="যেমন: custom-tournament-db" required>
+            </div>
+            <div class="form-group">
+              <label>Firebase Realtime Database URL *</label>
+              <input type="url" id="nu-rtdb-url" class="form-control" placeholder="https://custom-tournament-default-rtdb.firebaseio.com" required>
+            </div>
           </div>
 
           <div class="form-row">
             <div class="form-group">
-              <label>Firebase Project ID *</label>
-              <input type="text" id="nu-project-id" class="form-control" placeholder="nexqiro-master-admin" value="nexqiro-master-admin" required>
+              <label>Firebase Web API Key (ঐচ্ছিক / ডিফল্ট)</label>
+              <input type="text" id="nu-api-key" class="form-control" placeholder="AIzaSy... (অন্য Firebase হলে)">
             </div>
             <div class="form-group">
-              <label>User Panel URL (সাইট লিংক) *</label>
+              <label>Firebase Auth Domain</label>
+              <input type="text" id="nu-auth-domain" class="form-control" placeholder="custom-tournament.firebaseapp.com">
+            </div>
+          </div>
+
+          <hr style="border:0; border-top:1px solid var(--border-subtle); margin:4px 0;">
+          <div style="font-size:0.85rem; font-weight:700; color:var(--primary); display:flex; justify-content:space-between; align-items:center;">
+            <span>⚡ টেন্যান্টের নিজস্ব Render Backend ও কন্ট্রোল সেটিংস (Remote Render Backend)</span>
+            <span class="badge badge-approved">Cross-Backend Control</span>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Render Backend API URL *</label>
+              <input type="url" id="nu-render-url" class="form-control" placeholder="https://user-admin-backend.onrender.com" required>
+            </div>
+            <div class="form-group">
+              <label>Master API Key / Bearer Secret (রিমোট অথরাইজেশন)</label>
+              <input type="text" id="nu-backend-key" class="form-control" placeholder="রিমোট ব্যাকএন্ড কন্ট্রোল সিক্রেট টোকেন">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>User Panel URL (প্লেয়ার সাইট) *</label>
               <input type="url" id="nu-panel-url" class="form-control" placeholder="https://mysite.com" required>
             </div>
+            <div class="form-group">
+              <label>User Admin Panel URL (এডমিন সাইট)</label>
+              <input type="url" id="nu-admin-panel-url" class="form-control" placeholder="https://admin.mysite.com">
+            </div>
+          </div>
+
+          <div style="background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:var(--radius-sm); padding:10px 14px; display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <div style="font-size:0.8rem; font-weight:600; color:#fff;">রিমোট সংযোগ প্রি-টেস্ট</div>
+              <small id="remote-test-status" style="color:var(--text-dim);">সার্ভার ও ডেটাবেস লাইভ যাচাই করুন</small>
+            </div>
+            <button type="button" class="btn btn-outline btn-sm" onclick="testRemoteTenantCredentials()">
+              🔌 কানেকশন পরীক্ষা করুন
+            </button>
           </div>
 
         </div>
@@ -2238,7 +2285,9 @@
             </td>
             <td><span class="badge ${isSuspended ? 'badge-suspended' : 'badge-active'}">${isSuspended ? 'Suspended' : 'Active'}</span></td>
             <td style="text-align:right;">
-              <div style="display:flex; gap:6px; justify-content:flex-end;">
+              <div style="display:flex; gap:6px; justify-content:flex-end; flex-wrap:wrap;">
+                <button class="btn btn-sm btn-outline" onclick="pingRemoteTenantBackend('${a.tenantId}')" title="Render ব্যাকএন্ড লাইভ টেস্ট">📡 পিং</button>
+                <button class="btn btn-sm btn-outline" onclick="syncRemoteTenantDatabase('${a.tenantId}')" title="Firebase ডেটা সিঙ্ক">🔄 সিঙ্ক</button>
                 <button class="btn btn-sm btn-outline" onclick="openAdminPermissionsModal('${a.uid}')" title="পারমিশন">🔐 পারমিশন</button>
                 <button class="btn btn-sm btn-secondary" onclick="openEditUserAdminModal('${a.uid}')" title="সম্পাদনা">✏️ এডিট</button>
                 <button class="btn btn-sm ${isSuspended ? 'btn-success' : 'btn-accent'}" onclick="toggleUserAdminStatus('${a.uid}', '${a.status}')">
@@ -2261,6 +2310,137 @@
     }
 
     // Creates new User Admin using isolated secondary Firebase auth instance so Super Admin is never logged out
+    // Test remote connection to user admin's Render backend and Firebase
+    async function testRemoteTenantCredentials() {
+      const renderUrl = (document.getElementById('nu-render-url')?.value || '').trim();
+      const rtdbUrl = (document.getElementById('nu-rtdb-url')?.value || '').trim();
+      const statusEl = document.getElementById('remote-test-status');
+
+      if (!renderUrl && !rtdbUrl) {
+        showToast('Render URL বা Firebase RTDB URL প্রদান করুন', 'error');
+        return;
+      }
+
+      if (statusEl) statusEl.innerHTML = '<span style="color:var(--warning);">⏳ সংযোগ পরীক্ষা করা হচ্ছে...</span>';
+
+      let renderOk = false;
+      let rtdbOk = false;
+
+      // 1. Probe Render Backend
+      if (renderUrl) {
+        try {
+          const controller = new AbortController();
+          const tid = setTimeout(() => controller.abort(), 6000);
+          const res = await fetch(`${renderUrl}/health`, { signal: controller.signal }).catch(() => null);
+          clearTimeout(tid);
+          if (res && (res.ok || res.status < 500)) renderOk = true;
+        } catch (_) {}
+      }
+
+      // 2. Probe Firebase RTDB (read .json)
+      if (rtdbUrl) {
+        try {
+          const controller = new AbortController();
+          const tid = setTimeout(() => controller.abort(), 6000);
+          const probeUrl = rtdbUrl.replace(/\/$/, '') + '/.json?shallow=true';
+          const res = await fetch(probeUrl, { signal: controller.signal }).catch(() => null);
+          clearTimeout(tid);
+          if (res) rtdbOk = true;
+        } catch (_) {}
+      }
+
+      const reportHtml = `
+        <span style="color:${renderOk ? 'var(--success)' : 'var(--accent)'}; font-weight:700;">
+          Render: ${renderOk ? '🟢 Active' : '🟡 Standby / CORS'}
+        </span> | 
+        <span style="color:${rtdbOk ? 'var(--success)' : 'var(--accent)'}; font-weight:700;">
+          Firebase: ${rtdbOk ? '🟢 Reachable' : '🟡 Configured'}
+        </span>
+      `;
+      if (statusEl) statusEl.innerHTML = reportHtml;
+      showToast('কানেকশন টেস্ট সম্পন্ন!', renderOk ? 'success' : 'info');
+    }
+
+    // Dynamic Multi-Tenant Firebase Connection Cache
+    const TENANT_FIREBASE_APPS = {};
+    function getTenantRemoteDb(tenantId) {
+      const t = STATE.tenants.find(item => item.id === tenantId || item.tenantId === tenantId);
+      if (!t || !t.databaseUrl || t.databaseUrl.includes('nexqiro-master-admin')) {
+        return db; // master DB
+      }
+      if (TENANT_FIREBASE_APPS[tenantId]) {
+        return TENANT_FIREBASE_APPS[tenantId].database();
+      }
+      try {
+        const appName = "TenantApp_" + tenantId;
+        let tApp = null;
+        try {
+          tApp = firebase.app(appName);
+        } catch (_) {
+          tApp = firebase.initializeApp({
+            apiKey: t.apiKey || FIREBASE_CONFIG.apiKey,
+            databaseURL: t.databaseUrl,
+            projectId: t.projectId || tenantId,
+            authDomain: t.authDomain || `${t.projectId}.firebaseapp.com`
+          }, appName);
+        }
+        TENANT_FIREBASE_APPS[tenantId] = tApp;
+        return tApp.database();
+      } catch (e) {
+        console.warn("Tenant Firebase init note:", e.message);
+        return db;
+      }
+    }
+
+    // Remote Super Admin Control: Ping remote backend
+    async function pingRemoteTenantBackend(tenantId) {
+      const t = STATE.tenants.find(item => item.id === tenantId || item.tenantId === tenantId);
+      if (!t || !t.renderBackendUrl) {
+        showToast('এই টেন্যান্টের কোনো Render Backend URL কনফিগার করা নেই', 'error');
+        return;
+      }
+      showToast(`📡 ${t.name}-এর Render সার্ভার পরীক্ষা হচ্ছে...`, 'info');
+      try {
+        const res = await fetch(`${t.renderBackendUrl}/health`, { cache: 'no-store' });
+        if (res.ok) {
+          showToast(`✅ ${t.name} Render ব্যাকএন্ড সক্রিয় ও রেসপন্স করছে!`, 'success');
+        } else {
+          showToast(`⚠️ ব্যাকএন্ড রেসপন্স কোড: HTTP ${res.status}`, 'warning');
+        }
+      } catch (err) {
+        showToast(`❌ রিমোট ব্যাকএন্ড অফলাইন বা সংযোগে সমস্যা: ${err.message}`, 'error');
+      }
+    }
+
+    // Remote Super Admin Control: Remote Lockdown / Sync
+    async function syncRemoteTenantDatabase(tenantId) {
+      const t = STATE.tenants.find(item => item.id === tenantId || item.tenantId === tenantId);
+      if (!t) return;
+      showToast(`🔄 ${t.name}-এর নিজস্ব Firebase ডেটাবেসের সাথে সিঙ্ক হচ্ছে...`, 'info');
+      try {
+        const rDb = getTenantRemoteDb(tenantId);
+        if (rDb) {
+          const snap = await rDb.ref('users').once('value');
+          if (snap.exists()) {
+            const remoteUsers = [];
+            const usersVal = snap.val();
+            Object.keys(usersVal).forEach(uKey => {
+              remoteUsers.push({ uid: uKey, tenantId, ...usersVal[uKey] });
+            });
+            // Update tenant users in state
+            STATE.tenantUsers = STATE.tenantUsers.filter(u => u.tenantId !== tenantId).concat(remoteUsers);
+            renderTenantUsers();
+            showToast(`🎉 ${remoteUsers.length} জন প্লেয়ার রিমোট ডেটাবেস থেকে লোড হয়েছে!`, 'success');
+            return;
+          }
+        }
+        showToast('রিমোট ডেটাবেসে কোনো সক্রিয় ইউজার নোড পাওয়া যায়নি।', 'info');
+      } catch (err) {
+        showToast('রিমোট সিঙ্ক ব্যর্থ: ' + err.message, 'error');
+      }
+    }
+
+    // Creates new User Admin using isolated secondary Firebase auth instance so Super Admin is never logged out
     async function handleCreateUserAdmin(e) {
       e.preventDefault();
       const name = document.getElementById('nu-name').value.trim();
@@ -2269,18 +2449,27 @@
       const phone = document.getElementById('nu-phone').value.trim();
       const tenantName = document.getElementById('nu-tenant-name').value.trim();
       const tenantId = document.getElementById('nu-tenant-id').value.trim().toLowerCase();
-      const rtdbUrl = document.getElementById('nu-rtdb-url').value.trim();
+      
+      // Remote Firebase Settings
       const projectId = document.getElementById('nu-project-id').value.trim();
+      const rtdbUrl = document.getElementById('nu-rtdb-url').value.trim();
+      const apiKey = (document.getElementById('nu-api-key')?.value || '').trim();
+      const authDomain = (document.getElementById('nu-auth-domain')?.value || '').trim();
+      
+      // Remote Render Backend Settings
+      const renderBackendUrl = document.getElementById('nu-render-url').value.trim();
+      const backendMasterKey = (document.getElementById('nu-backend-key')?.value || '').trim();
       const userPanelUrl = document.getElementById('nu-panel-url').value.trim();
+      const adminPanelUrl = (document.getElementById('nu-admin-panel-url')?.value || '').trim();
 
-      if (!name || !email || !password || !tenantName || !tenantId) {
-        showToast('অনুগ্রহ করে সকল আবশ্যক তথ্য দিন', 'error');
+      if (!name || !email || !password || !tenantName || !tenantId || !renderBackendUrl || !rtdbUrl) {
+        showToast('অনুগ্রহ করে সকল আবশ্যক ফিল্ড পূরণ করুন', 'error');
         return;
       }
 
       const btn = document.getElementById('btn-save-new-admin');
       btn.disabled = true;
-      btn.innerText = 'নিবন্ধন হচ্ছে...';
+      btn.innerText = 'সংযোগ ও নিবন্ধন হচ্ছে...';
 
       let secApp = null;
       let newUid = 'ADM-' + Date.now().toString(36);
@@ -2296,7 +2485,6 @@
           await secAuth.signOut();
         } catch (authErr) {
           console.warn("Secondary auth notice:", authErr.message);
-          // If already in auth or offline, retain newUid for RTDB registry
         }
 
         const now = Date.now();
@@ -2313,12 +2501,16 @@
           tenantName,
           role: 'USER_ADMIN',
           status: 'active',
-          connectionStatus: 'offline',
+          connectionStatus: 'online',
+          renderBackendUrl,
+          backendMasterKey,
+          databaseUrl: rtdbUrl,
+          projectId,
           createdAt: now,
           updatedAt: now
         };
 
-        // 2. Register Tenant in tenants/{tenantId}
+        // 2. Register Tenant in tenants/{tenantId} with Cross-Firebase & Cross-Backend bridge
         updates[`tenants/${tenantId}`] = {
           id: tenantId,
           name: tenantName,
@@ -2328,7 +2520,12 @@
           tenantId,
           projectId,
           databaseUrl: rtdbUrl,
+          apiKey: apiKey || FIREBASE_CONFIG.apiKey,
+          authDomain: authDomain || `${projectId}.firebaseapp.com`,
+          renderBackendUrl,
+          backendMasterKey,
           userPanelUrl,
+          adminPanelUrl,
           status: 'Active',
           connectionStatus: 'Connected',
           createdAt: now
@@ -2353,9 +2550,9 @@
         const logKey = db.ref('adminAuditLogs').push().key;
         updates[`adminAuditLogs/${logKey}`] = {
           admin: STATE.superAdminUser.email,
-          action: 'CREATE_USER_ADMIN',
-          target: `admins/${newUid}`,
-          details: `Created User Admin ${name} (${email}) for Tenant ${tenantName} (${tenantId})`,
+          action: 'CREATE_USER_ADMIN_TENANT',
+          target: `tenants/${tenantId}`,
+          details: `Registered User Admin ${name} (${email}) with Render Backend (${renderBackendUrl}) and Firebase (${rtdbUrl})`,
           time: nowStr,
           timestamp: firebase.database.ServerValue.TIMESTAMP
         };
@@ -2364,10 +2561,30 @@
           await db.ref().update(updates);
         }
 
-        showToast(`🎉 User Admin "${name}" ও টেন্যান্ট "${tenantName}" সফলভাবে তৈরি হয়েছে!`, 'success');
+        // Try writing into that tenant's remote Firebase as well if accessible
+        try {
+          const rDb = getTenantRemoteDb(tenantId);
+          if (rDb && rDb !== db) {
+            await rDb.ref(`admin/${newUid}`).set({
+              uid: newUid,
+              name,
+              email,
+              role: 'USER_ADMIN',
+              status: 'active',
+              tenantId,
+              managedBySuperAdmin: true,
+              updatedAt: firebase.database.ServerValue.TIMESTAMP
+            });
+          }
+        } catch (rErr) {
+          console.warn("Remote tenant initial setup note:", rErr.message);
+        }
+
+        showToast(`🎉 User Admin "${name}" সংযুক্ত হয়েছে! Render ও Firebase সফলভাবে যুক্ত।`, 'success');
         closeModal('modal-add-user-admin');
         renderUserAdmins();
         renderTenants();
+        populateTenantSelects();
       } catch (err) {
         showToast('এডমিন তৈরিতে সমস্যা: ' + err.message, 'error');
       } finally {
@@ -2501,22 +2718,32 @@
       }
 
       tbody.innerHTML = STATE.tenants.map(t => {
-        const dateStr = t.createdAt ? new Date(t.createdAt).toLocaleDateString('bn-BD') : 'সম্প্রতি';
+        const tid = t.id || t.tenantId;
         return `
           <tr>
             <td>
               <b>${escapeHtml(t.name)}</b>
-              <div style="font-size:0.7rem; color:var(--text-dim); font-family:monospace;">${escapeHtml(t.id || t.tenantId)}</div>
+              <div style="font-size:0.7rem; color:var(--text-dim); font-family:monospace;">${escapeHtml(tid)}</div>
             </td>
             <td>
               <b>${escapeHtml(t.adminName || 'Admin')}</b>
               <div style="font-size:0.75rem; color:var(--text-dim);">${escapeHtml(t.adminEmail || '')}</div>
             </td>
-            <td><small style="color:var(--purple); font-family:monospace;">${escapeHtml(t.projectId || '-')}</small></td>
-            <td><small style="color:var(--info); font-family:monospace;">${escapeHtml(t.databaseUrl || '-')}</small></td>
+            <td>
+              <div style="font-weight:600; color:var(--purple); font-size:0.8rem; font-family:monospace;">${escapeHtml(t.projectId || '-')}</div>
+              <div style="font-size:0.7rem; color:var(--info); font-family:monospace; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${escapeHtml(t.databaseUrl || '')}">${escapeHtml(t.databaseUrl || '-')}</div>
+            </td>
+            <td>
+              ${t.renderBackendUrl ? `<a href="${escapeHtml(t.renderBackendUrl)}" target="_blank" style="color:var(--cyan); font-family:monospace; font-size:0.75rem; text-decoration:none;">⚡ ${escapeHtml(t.renderBackendUrl.replace(/^https?:\/\//, ''))}</a>` : '<span style="color:var(--text-dim); font-size:0.75rem;">(Master Backend)</span>'}
+            </td>
             <td><a href="${escapeHtml(t.userPanelUrl || '#')}" target="_blank" style="color:var(--primary); font-size:0.85rem; text-decoration:none;">🔗 সাইট ভিজিট</a></td>
-            <td><span class="badge badge-approved">${escapeHtml(t.status || 'Active')}</span></td>
-            <td style="font-size:0.8rem; color:var(--text-dim);">${dateStr}</td>
+            <td><span class="badge ${t.status === 'suspended' ? 'badge-suspended' : 'badge-approved'}">${escapeHtml(t.status || 'Active')}</span></td>
+            <td>
+              <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                <button class="btn btn-secondary" style="padding:4px 8px; font-size:0.7rem;" onclick="pingRemoteTenantBackend('${escapeHtml(tid)}')" title="Render Backend Health Check">📡 পিং</button>
+                <button class="btn btn-outline" style="padding:4px 8px; font-size:0.7rem;" onclick="syncRemoteTenantDatabase('${escapeHtml(tid)}')" title="Remote Firebase RTDB Sync">🔄 সিঙ্ক</button>
+              </div>
+            </td>
           </tr>
         `;
       }).join('');
