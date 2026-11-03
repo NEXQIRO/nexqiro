@@ -1,4 +1,5 @@
-// Firebase Web Config (এটা গোপন কী নয়, GitHub-এ রাখা যাবে)
+// NEXQIRO Firebase Web Config (Master Project)
+// এই কনফিগারেশনটি পাবলিক এবং GitHub-এ রাখা নিরাপদ।
 window.NP_FIREBASE_CONFIG = {
   apiKey: "AIzaSyACrBX4gUnoaTEnqvUti8U4ZP7BjC7VkyA",
   authDomain: "nexqiro-master-admin.firebaseapp.com",

@@ -673,14 +673,112 @@
   <script src="./firebase-config.js"></script>
   <script>
     const FIREBASE_CONFIG = window.NP_FIREBASE_CONFIG || {
-      apiKey: "AIzaSyBFaoU_cDws6YVAXFMWBnogGAQHhjfC23Q",
-      authDomain: "np-trunament-bd.firebaseapp.com",
-      databaseURL: "https://np-trunament-bd-default-rtdb.firebaseio.com",
-      projectId: "np-trunament-bd",
-      storageBucket: "np-trunament-bd.firebasestorage.app",
-      messagingSenderId: "324972484501",
-      appId: "1:324972484501:web:38598aa922e983990b889c"
+      apiKey: "AIzaSyACrBX4gUnoaTEnqvUti8U4ZP7BjC7VkyA",
+      authDomain: "nexqiro-master-admin.firebaseapp.com",
+      databaseURL: "https://nexqiro-master-admin-default-rtdb.firebaseio.com",
+      projectId: "nexqiro-master-admin",
+      storageBucket: "nexqiro-master-admin.firebasestorage.app",
+      messagingSenderId: "266672416984",
+      appId: "1:266672416984:web:e2821653c6f4efc71a8fad",
+      measurementId: "G-B6QDDSK3LC"
     };
+
+    // Render Backend API Integration & Authorized Super Admin UID
+    const BACKEND_URL = window.NEXQIRO_BACKEND_URL || "https://nexqiro-backend.onrender.com";
+    const AUTHORIZED_SUPER_ADMIN_UID = "2bu54ZYJYLdZyIRWASwMQrftruJ2";
+
+    // Backend Health Probe
+    async function checkBackendHealth() {
+      const statusEl = document.querySelector(".status-indicator");
+      try {
+        const res = await fetch(`${BACKEND_URL}/health`, { cache: "no-store" });
+        if (res.ok) {
+          if (statusEl) {
+            statusEl.innerHTML = "<span class=\"status-dot\"></span><span>🟢 NEXQIRO ব্যাকএন্ড ও সেন্ট্রাল অথরিটি কানেক্টেড</span>";
+            statusEl.style.color = "var(--success)";
+          }
+          return true;
+        }
+      } catch (e) {
+        console.warn("Backend health check:", e.message);
+      }
+      if (statusEl) {
+        statusEl.innerHTML = "<span class=\"status-dot\" style=\"background:var(--warning); box-shadow:0 0 8px var(--warning);\"></span><span>🟡 ব্যাকএন্ড সংযোগ পরীক্ষা হচ্ছে...</span>";
+        statusEl.style.color = "var(--warning)";
+      }
+      return false;
+    }
+
+    /**
+     * Verifies user session with Backend GET /api/me using Firebase ID token.
+     * Enforces:
+     * - 401: Token missing/invalid/expired
+     * - 403: Unauthorized UID, role !== SUPER_ADMIN, or inactive account
+     * - 200: Successfully authenticated Super Admin
+     */
+    async function verifySuperAdminWithBackend(user, forceRefresh = false) {
+      if (!user) {
+        return { ok: false, error: "কোনো লগইন সেশন পাওয়া যায়নি।" };
+      }
+      try {
+        const token = await user.getIdToken(forceRefresh);
+        const res = await fetch(`${BACKEND_URL}/api/me`, {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json"
+          }
+        });
+
+        if (res.status === 401) {
+          return { ok: false, error: "অবৈধ বা মেয়াদোত্তীর্ণ সেশন টোকেন (HTTP 401)। অনুগ্রহ করে আবার লগইন করুন।" };
+        }
+
+        if (res.status === 403) {
+          return { ok: false, error: "অননুমোদিত অ্যাকাউন্ট! শুধুমাত্র অনুমোদিত Master Super Admin প্রবেশাধিকার রাখেন (HTTP 403)।" };
+        }
+
+        if (!res.ok) {
+          return { ok: false, error: `ব্যাকএন্ড রেসপন্স ব্যর্থ: HTTP ${res.status}` };
+        }
+
+        const data = await res.json();
+        const userObj = data.user || data;
+        const uid = userObj.uid;
+        const role = userObj.role;
+        const status = userObj.status || "active";
+
+        if (uid !== AUTHORIZED_SUPER_ADMIN_UID) {
+          return { ok: false, error: "অননুমোদিত ইউজার UID! শুধুমাত্র Master Super Admin অনুমোদিত।" };
+        }
+        if (role !== "SUPER_ADMIN") {
+          return { ok: false, error: "অননুমোদিত রোল! অ্যাকাউন্টের SUPER_ADMIN পারমিশন নেই।" };
+        }
+        if (status !== "active") {
+          return { ok: false, error: "অ্যাকাউন্টটি সক্রিয় নয় বা স্থগিত করা হয়েছে।" };
+        }
+
+        return { ok: true, user: userObj, token };
+      } catch (err) {
+        console.error("Backend /api/me verification error:", err);
+        return {
+          ok: false,
+          error: `ব্যাকএন্ড সার্ভার রেসপন্স করছে না (${BACKEND_URL})। অনুগ্রহ করে ব্যাকএন্ড সক্রিয় আছে কি না নিশ্চিত করুন: ${err.message}`
+        };
+      }
+    }
+
+    /**
+     * Helper to make authenticated requests to protected Backend routes
+     */
+    async function authenticatedBackendFetch(endpoint, options = {}) {
+      if (!auth || !auth.currentUser) throw new Error("Authentication required");
+      const token = await auth.currentUser.getIdToken();
+      const headers = Object.assign({}, options.headers || {}, {
+        "Authorization": `Bearer ${token}`
+      });
+      return fetch(`${BACKEND_URL}${endpoint}`, Object.assign({}, options, { headers }));
+    }
 
     let firebaseApp = null;
     let auth = null;
@@ -1392,6 +1490,7 @@
       e.preventDefault();
       const inputVal = document.getElementById('login-email').value.trim();
       const pass = document.getElementById('login-password').value;
+      const btn = document.getElementById('btn-login');
       if (!auth) return;
 
       let email = inputVal;
@@ -1400,47 +1499,94 @@
         return;
       }
 
+      const origBtnText = btn.innerText;
+      btn.disabled = true;
+      btn.innerText = '🔐 ব্যাকএন্ড ভেরিফিকেশন চলছে...';
+
       try {
+        // Step 1: Firebase Authentication Login
         const cred = await auth.signInWithEmailAndPassword(email, pass);
-        if (!(await window.NEXQIRO_roleCheck(cred.user))) {
+
+        // Step 2: Backend ID token verification & Super Admin authorization via GET /api/me
+        const backendVerif = await verifySuperAdminWithBackend(cred.user, true);
+        if (!backendVerif.ok) {
           await auth.signOut();
-          showToast('এই অ্যাকাউন্টের Super Admin অনুমতি নেই', 'error');
+          showToast(backendVerif.error, 'error');
+          btn.disabled = false;
+          btn.innerText = origBtnText;
           return;
         }
+
+        // Step 3: Firebase RTDB role confirmation
+        const roleOk = await window.NEXQIRO_roleCheck(cred.user);
+        if (!roleOk) {
+          await auth.signOut();
+          showToast('এই অ্যাকাউন্টের Realtime Database-এ Super Admin পারমিশন সক্রিয় নেই', 'error');
+          btn.disabled = false;
+          btn.innerText = origBtnText;
+          return;
+        }
+
+        // Step 4: Grant access to protected dashboard
         STATE.superAdminUser.uid = cred.user.uid;
         STATE.superAdminUser.email = cred.user.email;
+        STATE.superAdminUser.role = 'SUPER_ADMIN';
+        window.NEXQIRO_IS_SUPER = cred.user.uid;
+
         document.getElementById('sidebar-email').innerText = cred.user.email;
         document.getElementById('login-overlay').style.display = 'none';
 
         initFirebaseListeners();
-        showToast(`স্বাগতম, Master Super Admin ${cred.user.email}!`, 'success');
+        checkBackendHealth();
+        showToast(`🎉 স্বাগতম, Master Super Admin (${cred.user.email})! ব্যাকএন্ড সফলভাবে সংযুক্ত।`, 'success');
       } catch (err) {
         showToast('লগইন ব্যর্থ: ' + err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerText = origBtnText;
       }
     }
 
-    function handleLogout() {
+    async function handleLogout() {
       if (confirm('NEXQIRO Super Admin থেকে লগআউট করতে চান?')) {
-        if (auth) auth.signOut();
+        try {
+          if (auth) await auth.signOut();
+        } catch (e) {
+          console.warn('Sign out error:', e);
+        }
+        STATE.superAdminUser = { uid: '', email: '', role: '' };
+        window.NEXQIRO_IS_SUPER = '';
         document.getElementById('login-overlay').style.display = 'flex';
+        showToast('সফলভাবে লগআউট সম্পন্ন হয়েছে।', 'info');
       }
     }
 
     window.addEventListener('DOMContentLoaded', () => {
+      checkBackendHealth();
       if (auth) {
         auth.onAuthStateChanged(async user => {
-          if (user && !(await window.NEXQIRO_roleCheck(user))) {
-            await auth.signOut();
-            showToast('এই অ্যাকাউন্টের Super Admin অনুমতি নেই', 'error');
-            return;
-          }
           if (user) {
+            // Verify with backend before granting access
+            const backendVerif = await verifySuperAdminWithBackend(user);
+            const roleOk = await window.NEXQIRO_roleCheck(user);
+
+            if (!backendVerif.ok || !roleOk) {
+              await auth.signOut();
+              document.getElementById('login-overlay').style.display = 'flex';
+              showToast(backendVerif.ok ? 'এই অ্যাকাউন্টের Super Admin অনুমতি নেই' : backendVerif.error, 'error');
+              return;
+            }
+
             STATE.superAdminUser.uid = user.uid;
             STATE.superAdminUser.email = user.email;
+            STATE.superAdminUser.role = 'SUPER_ADMIN';
+            window.NEXQIRO_IS_SUPER = user.uid;
             document.getElementById('sidebar-email').innerText = user.email;
             document.getElementById('login-overlay').style.display = 'none';
             initFirebaseListeners();
           } else {
+            STATE.superAdminUser = { uid: '', email: '', role: '' };
+            window.NEXQIRO_IS_SUPER = '';
             document.getElementById('login-overlay').style.display = 'flex';
           }
         });
