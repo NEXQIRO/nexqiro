@@ -137,6 +137,8 @@
     .badge-approved { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
     .badge-pending { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
     .badge-rejected { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+    .badge-suspended { background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.5); }
+    .badge-active { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.5); }
 
     /* Tables */
     .table-container { width: 100%; overflow-x: auto; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); }
@@ -185,11 +187,22 @@
     .permission-matrix-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
     .perm-toggle-item { background: var(--bg-card); border: 1px solid var(--border-subtle); padding: 12px 14px; border-radius: var(--radius-sm); display: flex; justify-content: space-between; align-items: center; }
 
+    /* Search & Filter Bar */
+    .search-bar-wrap { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
+    .search-input-box { position: relative; flex: 1; min-width: 240px; }
+    .search-input-box input { width: 100%; padding-left: 36px; }
+    .search-input-box svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; fill: var(--text-dim); }
+
+    /* Special Transfer Preview Box */
+    .transfer-preview-box { background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(12, 18, 32, 0.9)); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 18px; display: grid; grid-template-columns: 1fr auto 1fr; gap: 14px; align-items: center; text-align: center; margin: 16px 0; }
+    .transfer-preview-col { background: var(--bg-card); padding: 14px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); }
+
     @media (max-width: 900px) {
       .sidebar { transform: translateX(-100%); }
       .sidebar.open { transform: translateX(0); }
       .main-wrapper { margin-left: 0; }
       .mobile-menu-btn { display: block; }
+      .transfer-preview-box { grid-template-columns: 1fr; }
     }
 
     /* GAMES CONTROL CENTER START (CSS) - স্কোপ: #view-games ও #gcc-modal এর ভেতরে */
@@ -324,6 +337,57 @@
           <button onclick="switchView('view-audit'); renderAudit();">
             <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
             <span class="nav-label">সেন্ট্রাল অডিট ট্রেইল</span>
+          </button>
+        </li>
+
+        <!-- NEW SUPER ADMIN UPGRADE SECTION -->
+        <div class="nav-section-title">User Admin & Tenant Control</div>
+        <li class="nav-item" data-view="view-user-admins">
+          <button onclick="switchView('view-user-admins'); renderUserAdmins();">
+            <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+            <span class="nav-label">User Admin ম্যানেজমেন্ট</span>
+          </button>
+        </li>
+        <li class="nav-item" data-view="view-tenants">
+          <button onclick="switchView('view-tenants'); renderTenants();">
+            <svg viewBox="0 0 24 24"><path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z"/></svg>
+            <span class="nav-label">টেন্যান্ট ও সাইট আইসোলেশন</span>
+          </button>
+        </li>
+        <li class="nav-item" data-view="view-tenant-users">
+          <button onclick="switchView('view-tenant-users'); renderTenantUsers();">
+            <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+            <span class="nav-label">টেন্যান্ট প্লেয়ার/ইউজার হাব</span>
+          </button>
+        </li>
+        <li class="nav-item" data-view="view-special-transfer">
+          <button onclick="switchView('view-special-transfer'); renderSpecialTransfersView();">
+            <svg viewBox="0 0 24 24"><path d="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z"/></svg>
+            <span class="nav-label">স্পেশাল ইন্টারনাল ট্রান্সফার</span>
+          </button>
+        </li>
+        <li class="nav-item" data-view="view-game-assignments">
+          <button onclick="switchView('view-game-assignments'); renderGameAssignments();">
+            <svg viewBox="0 0 24 24"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm8-2c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-3-2c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1z"/></svg>
+            <span class="nav-label">গেম অ্যাসাইনমেন্ট কন্ট্রোল</span>
+          </button>
+        </li>
+        <li class="nav-item" data-view="view-tournaments">
+          <button onclick="switchView('view-tournaments'); renderTournamentsMaster();">
+            <svg viewBox="0 0 24 24"><path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94.63 1.5 1.98 2.63 3.61 2.96V19H7v2h10v-2h-4v-3.1c1.63-.33 2.98-1.46 3.61-2.96C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2z"/></svg>
+            <span class="nav-label">টুর্নামেন্ট মাস্টার হাব</span>
+          </button>
+        </li>
+        <li class="nav-item" data-view="view-turnover">
+          <button onclick="switchView('view-turnover'); renderTurnoverView();">
+            <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14h-2v-4h2v4zm4-6h-2V7h2v4z"/></svg>
+            <span class="nav-label">টার্নওভার ম্যানেজমেন্ট</span>
+          </button>
+        </li>
+        <li class="nav-item" data-view="view-reports">
+          <button onclick="switchView('view-reports'); renderReportsView();">
+            <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+            <span class="nav-label">অডিট ও ফিন্যান্স রিপোর্ট</span>
           </button>
         </li>
       </ul>
@@ -564,6 +628,342 @@
           </div>
         </section>
 
+        <!-- ============================================== -->
+        <!-- NEW UPGRADE SECTIONS (A TO L) -->
+        <!-- ============================================== -->
+
+        <!-- A. USER ADMIN MANAGEMENT VIEW -->
+        <section id="view-user-admins" class="view-section">
+          <div class="toolbar">
+            <div>
+              <h3 style="color:#fff;">User Admin ব্যবস্থাপনা ও নিয়ন্ত্রণ</h3>
+              <p style="font-size:0.8rem; color:var(--text-muted);">নতুন User Admin তৈরি, সম্পাদনা, সাময়িক স্থগিত/সক্রিয়করণ ও পৃথক পারমিশন নিয়ন্ত্রণ করুন।</p>
+            </div>
+            <button class="btn btn-primary" onclick="openAddUserAdminModal()">+ নতুন User Admin যোগ করুন</button>
+          </div>
+
+          <div class="search-bar-wrap">
+            <div class="search-input-box">
+              <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+              <input type="text" id="user-admin-search-input" class="form-control" placeholder="নাম, ইমেইল বা UID দিয়ে খুঁজুন..." oninput="filterUserAdmins()">
+            </div>
+            <select id="user-admin-status-filter" class="form-control" style="width:160px;" onchange="filterUserAdmins()">
+              <option value="ALL">সকল স্ট্যাটাস</option>
+              <option value="active">Active (সক্রিয়)</option>
+              <option value="suspended">Suspended (স্থগিত)</option>
+            </select>
+          </div>
+
+          <div class="card">
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>User Admin নাম ও তথ্য</th>
+                    <th>টার্গেট টেন্যান্ট / সাইট</th>
+                    <th>ওয়ালেট ব্যালেন্স</th>
+                    <th>সংযোগ স্ট্যাটাস</th>
+                    <th>অ্যাকাউন্ট স্ট্যাটাস</th>
+                    <th style="text-align:right;">অ্যাকশন</th>
+                  </tr>
+                </thead>
+                <tbody id="user-admins-table-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- B. TENANT / SITE MANAGEMENT VIEW -->
+        <section id="view-tenants" class="view-section">
+          <div class="toolbar">
+            <div>
+              <h3 style="color:#fff;">টেন্যান্ট ও সাইট আইসোলেশন কন্ট্রোল</h3>
+              <p style="font-size:0.8rem; color:var(--text-muted);">প্রতিটি User Admin-এর জন্য সম্পূর্ণ স্বাধীন ডেটাবেস ও প্যানেল যুক্ত টেন্যান্ট আর্কিটেকচার।</p>
+            </div>
+            <button class="btn btn-primary" onclick="openAddUserAdminModal()">+ নতুন টেন্যান্ট / এডমিন নিবন্ধন</button>
+          </div>
+
+          <div class="card" style="margin-bottom:20px;">
+            <div class="card-header"><div class="card-title"><span>নিবন্ধিত স্বাধীন টেন্যান্টসমূহ</span></div></div>
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Tenant ID & নাম</th>
+                    <th>অ্যাসাইনড User Admin</th>
+                    <th>Firebase Project ID</th>
+                    <th>Realtime Database URL</th>
+                    <th>User Panel URL</th>
+                    <th>স্ট্যাটাস</th>
+                    <th>নিবন্ধন তারিখ</th>
+                  </tr>
+                </thead>
+                <tbody id="tenants-table-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- F. USER MANAGEMENT ACROSS TENANTS VIEW -->
+        <section id="view-tenant-users" class="view-section">
+          <div class="toolbar">
+            <div>
+              <h3 style="color:#fff;">টেন্যান্ট ইউজার ও খেলোয়াড় তথ্য হাব</h3>
+              <p style="font-size:0.8rem; color:var(--text-muted);">কানেক্টেড টেন্যান্টের খেলোয়াড়দের প্রোফাইল, গেম অ্যাক্টিভিটি, ব্যালেন্স ও হিস্ট্রি সেন্ট্রালভাবে মনিটর করুন।</p>
+            </div>
+            <div style="display:flex; gap:10px;">
+              <select id="tu-tenant-select" class="form-control" style="width:200px;" onchange="renderTenantUsers()">
+                <option value="ALL">🌐 সকল টেন্যান্ট</option>
+                <option value="np-tournament-bd">NP TOURNAMENT BD</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="search-bar-wrap">
+            <div class="search-input-box">
+              <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+              <input type="text" id="tenant-user-search-input" class="form-control" placeholder="প্লেয়ারের নাম, ফোন বা UID দিয়ে খুঁজুন..." oninput="filterTenantUsers()">
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>প্লেয়ার প্রোফাইল</th>
+                    <th>টেন্যান্ট</th>
+                    <th>বর্তমান ব্যালেন্স</th>
+                    <th>মোট ডিপোজিট / উইথড্র</th>
+                    <th>স্ট্যাটাস</th>
+                    <th>অ্যাক্টিভিটি</th>
+                    <th style="text-align:right;">অ্যাকশন</th>
+                  </tr>
+                </thead>
+                <tbody id="tenant-users-table-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- G. SPECIAL INTERNAL BALANCE TRANSFER VIEW -->
+        <section id="view-special-transfer" class="view-section">
+          <div class="toolbar">
+            <div>
+              <h3 style="color:#fff;">স্পেশাল ইন্টারনাল ব্যালেন্স ট্রান্সফার (User ➔ Admin Wallet)</h3>
+              <p style="font-size:0.8rem; color:var(--text-muted);">শুধুমাত্র Master Super Admin এই ক্ষমতাবলে ইউজারের অভ্যন্তরীণ ব্যালেন্স তার স্বংশ্লিষ্ট User Admin-এর ওয়ালেটে রিফান্ড বা স্থানান্তর করতে পারেন।</p>
+            </div>
+          </div>
+
+          <div class="card purple-border" style="margin-bottom:24px;">
+            <div class="card-header"><div class="card-title"><span>🔄 ইন্টারনাল ব্যালেন্স রিকভারি ও ট্রান্সফার ফর্ম</span></div></div>
+            <form id="special-transfer-form" onsubmit="handleExecuteSpecialTransfer(event)">
+              <div class="form-row" style="margin-bottom:14px;">
+                <div class="form-group">
+                  <label>টার্গেট টেন্যান্ট নির্বাচন করুন *</label>
+                  <select id="st-tenant-select" class="form-control" required onchange="handleSpecialTransferTenantChange()">
+                    <option value="">-- টেন্যান্ট সিলেক্ট করুন --</option>
+                    <option value="np-tournament-bd">NP TOURNAMENT BD</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>টার্গেট প্লেয়ার / ইউজার নির্বাচন করুন *</label>
+                  <select id="st-user-select" class="form-control" required onchange="updateSpecialTransferPreview()">
+                    <option value="">-- আগে টেন্যান্ট সিলেক্ট করুন --</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- LIVE PREVIEW BOX -->
+              <div class="transfer-preview-box" id="st-preview-box">
+                <div class="transfer-preview-col">
+                  <div style="font-size:0.75rem; color:var(--text-dim); text-transform:uppercase;">ইউজারের বর্তমান ব্যালেন্স</div>
+                  <div style="font-size:1.6rem; font-weight:700; color:var(--accent); font-family:var(--font-display);" id="st-user-cur-bal">৳ 0</div>
+                  <div style="font-size:0.75rem; color:var(--text-dim); margin-top:4px;">স্থানান্তরের পর ব্যালেন্স হবে: <b style="color:#fff;">৳ 0</b></div>
+                </div>
+                <div style="font-size:1.8rem; color:var(--purple); font-weight:800;">➔</div>
+                <div class="transfer-preview-col">
+                  <div style="font-size:0.75rem; color:var(--text-dim); text-transform:uppercase;">User Admin বর্তমান ব্যালেন্স</div>
+                  <div style="font-size:1.6rem; font-weight:700; color:var(--primary); font-family:var(--font-display);" id="st-admin-cur-bal">৳ 0</div>
+                  <div style="font-size:0.75rem; color:var(--text-dim); margin-top:4px;">স্থানান্তরের পর ব্যালেন্স হবে: <b style="color:var(--success);" id="st-admin-new-bal">৳ 0</b></div>
+                </div>
+              </div>
+
+              <div class="form-group" style="margin-bottom:18px;">
+                <label>স্থানান্তরের সুনির্দিষ্ট কারণ ও অডিট রেফারেন্স *</label>
+                <textarea id="st-reason" class="form-control" rows="2" placeholder="যেমন: টুর্নামেন্ট রিফান্ড সমন্বয় / প্লেয়ারের অনুরোধ অনুযায়ী এডমিন ফান্ডে রূপান্তর..." required minlength="5"></textarea>
+              </div>
+
+              <div style="display:flex; justify-content:flex-end;">
+                <button type="submit" class="btn btn-primary" id="btn-execute-st">
+                  ✓ ব্যালেন্স ট্রান্সফার সম্পন্ন করুন
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><div class="card-title"><span>ইন্টারনাল ব্যালেন্স ট্রান্সফার লেজার (Audit History)</span></div></div>
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Trx ID</th>
+                    <th>টেন্যান্ট</th>
+                    <th>ইউজার UID</th>
+                    <th>ট্রান্সফারকৃত পরিমাণ</th>
+                    <th>User Admin</th>
+                    <th>তারিখ ও সময়</th>
+                    <th>কারণ</th>
+                  </tr>
+                </thead>
+                <tbody id="special-transfer-ledger-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- H. GAME ASSIGNMENT VIEW -->
+        <section id="view-game-assignments" class="view-section">
+          <div class="toolbar">
+            <div>
+              <h3 style="color:#fff;">গেম অ্যাসাইনমেন্ট কন্ট্রোল সেন্টার</h3>
+              <p style="font-size:0.8rem; color:var(--text-muted);">কোন User Admin কোন গেমটির অ্যাক্সেস পাবে তা সেন্ট্রালভাবে নির্ধারণ করুন। User Admin কখনোই মূল গেমের URL বা কনফিগারেশন পরিবর্তন করতে পারবে না।</p>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>গেমের নাম ও ক্যাটাগরি</th>
+                    <th>মূল Game URL (Super Admin Only)</th>
+                    <th>অ্যাসাইনকৃত User Admins</th>
+                    <th style="text-align:right;">অ্যাকশন</th>
+                  </tr>
+                </thead>
+                <tbody id="game-assignments-table-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- I. TOURNAMENTS MASTER VIEW -->
+        <section id="view-tournaments" class="view-section">
+          <div class="toolbar">
+            <div>
+              <h3 style="color:#fff;">সেন্ট্রাল টুর্নামেন্ট মাস্টার হাব</h3>
+              <p style="font-size:0.8rem; color:var(--text-muted);">টেন্যান্টভিত্তিক টুর্নামেন্ট তৈরি, পর্যবেক্ষণ, নিয়ন্ত্রণ ও ফলাফল বণ্টন।</p>
+            </div>
+            <button class="btn btn-primary" onclick="openCreateTournamentModal()">+ নতুন টুর্নামেন্ট তৈরি করুন</button>
+          </div>
+
+          <div class="card">
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>টুর্নামেন্ট নাম</th>
+                    <th>টেন্যান্ট</th>
+                    <th>অ্যাসাইনকৃত গেম</th>
+                    <th>এন্ট্রি ফি</th>
+                    <th>প্রাইজ পুল</th>
+                    <th>স্ট্যাটাস</th>
+                    <th>সময়</th>
+                    <th style="text-align:right;">অ্যাকশন</th>
+                  </tr>
+                </thead>
+                <tbody id="tournaments-table-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- K. TURNOVER MANAGEMENT VIEW -->
+        <section id="view-turnover" class="view-section">
+          <div class="toolbar">
+            <div>
+              <h3 style="color:#fff;">টার্নওভার লিমিট ও প্রগ্রেস কন্ট্রোল</h3>
+              <p style="font-size:0.8rem; color:var(--text-muted);">ইউজার বা টেন্যান্ট লেভেলে টার্নওভার লিমিট নির্ধারণ, প্রগ্রেস ট্র্যাক ও প্রয়োজনে মওকুফ (Waive) করুন।</p>
+            </div>
+            <button class="btn btn-primary" onclick="openSetTurnoverModal()">+ নতুন টার্নওভার লিমিট নির্ধারণ</button>
+          </div>
+
+          <div class="card">
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>টেন্যান্ট / ইউজার</th>
+                    <th>টার্গেট টার্নওভার</th>
+                    <th>সম্পন্ন টার্নওভার</th>
+                    <th>অবশিষ্ট টার্নওভার</th>
+                    <th>স্ট্যাটাস</th>
+                    <th>সর্বশেষ আপডেট</th>
+                    <th style="text-align:right;">অ্যাকশন</th>
+                  </tr>
+                </thead>
+                <tbody id="turnover-table-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- L. REPORTS VIEW -->
+        <section id="view-reports" class="view-section">
+          <div class="toolbar">
+            <div>
+              <h3 style="color:#fff;">সেন্ট্রাল ফিন্যান্সিয়াল ও অডিট রিপোর্টস</h3>
+              <p style="font-size:0.8rem; color:var(--text-muted);">টেন্যান্টভিত্তিক তহবিল বণ্টন, অ্যাডমিন ব্যালেন্স ও সিস্টেম রিপোর্ট।</p>
+            </div>
+            <button class="btn btn-outline" onclick="window.print()">🖨️ প্রিন্ট / সেভ রিপোর্ট</button>
+          </div>
+
+          <div class="stats-grid" style="margin-bottom:20px;">
+            <div class="stat-card">
+              <div class="stat-icon stat-purple"><svg viewBox="0 0 24 24"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg></div>
+              <div class="stat-info">
+                <div class="stat-title">সেন্ট্রাল রিজার্ভ ব্যালেন্স</div>
+                <div class="stat-value" id="rep-master-bal">৳ 100,000</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon stat-green"><svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg></div>
+              <div class="stat-info">
+                <div class="stat-title">মোট এডমিন তহবিল বরাদ্দ</div>
+                <div class="stat-value" id="rep-allocated-bal">৳ 0</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon stat-gold"><svg viewBox="0 0 24 24"><path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94.63 1.5 1.98 2.63 3.61 2.96V19H7v2h10v-2h-4v-3.1c1.63-.33 2.98-1.46 3.61-2.96C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2z"/></svg></div>
+              <div class="stat-info">
+                <div class="stat-title">মোট অনুমোদিত আবেদন</div>
+                <div class="stat-value" id="rep-approved-count">0 টি</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><div class="card-title"><span>টেন্যান্টভিত্তিক আর্থিক সারসংক্ষেপ</span></div></div>
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>টেন্যান্টের নাম</th>
+                    <th>User Admin Email</th>
+                    <th>বর্তমান ওয়ালেট ব্যালেন্স</th>
+                    <th>মোট প্রাপ্ত তহবিল</th>
+                    <th>মোট প্লেয়ার রিফান্ড</th>
+                    <th>স্ট্যাটাস</th>
+                  </tr>
+                </thead>
+                <tbody id="tenant-reports-table-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
       </main>
     </div>
   </div>
@@ -644,6 +1044,241 @@
     </div>
   </div>
 
+  <!-- MODAL: ADD NEW USER ADMIN & TENANT -->
+  <div class="modal-backdrop" id="modal-add-user-admin">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title"><span>👥</span><span>নতুন User Admin ও টেন্যান্ট তৈরি করুন</span></h3>
+        <button class="modal-close" onclick="closeModal('modal-add-user-admin')">✕</button>
+      </div>
+      <form id="add-user-admin-form" onsubmit="handleCreateUserAdmin(event)">
+        <div class="modal-body">
+          <div style="background:rgba(168,85,247,0.1); border:1px solid rgba(168,85,247,0.3); border-radius:var(--radius-sm); padding:10px 14px; font-size:0.82rem; color:#e9d5ff;">
+            🛡️ প্রতিটি User Admin এর জন্য একটি স্বাধীন টেন্যান্ট নিবন্ধন হবে। Super Admin কনফার্ম করলেই কেবল অ্যাকাউন্ট কার্যকর হবে।
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>এডমিনের পুরো নাম *</label>
+              <input type="text" id="nu-name" class="form-control" placeholder="যেমন: Rahim Ahmed" required>
+            </div>
+            <div class="form-group">
+              <label>এডমিনের ইমেইল *</label>
+              <input type="email" id="nu-email" class="form-control" placeholder="admin@sitename.com" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>সিকিউর পাসওয়ার্ড *</label>
+              <input type="password" id="nu-password" class="form-control" placeholder="কমপক্ষে ৬ ক্যারেক্টার" required minlength="6">
+            </div>
+            <div class="form-group">
+              <label>ফোন নাম্বার (ঐচ্ছিক)</label>
+              <input type="tel" id="nu-phone" class="form-control" placeholder="+8801700000000">
+            </div>
+          </div>
+
+          <hr style="border:0; border-top:1px solid var(--border-subtle); margin:4px 0;">
+          <div style="font-size:0.85rem; font-weight:700; color:var(--purple);">টেন্যান্ট ও সাইট তথ্য (Tenant Isolation Data)</div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>টেন্যান্টের নাম *</label>
+              <input type="text" id="nu-tenant-name" class="form-control" placeholder="যেমন: NP Tournament Pro" required>
+            </div>
+            <div class="form-group">
+              <label>Tenant ID (ইউনিক আইডি) *</label>
+              <input type="text" id="nu-tenant-id" class="form-control" placeholder="যেমন: np-tourney-pro" required pattern="[a-z0-9\-_]+" title="ছোট হাতের অক্ষর, সংখ্যা বা হাইফেন">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Firebase Realtime Database URL *</label>
+            <input type="url" id="nu-rtdb-url" class="form-control" placeholder="https://np-tournament-bd-default-rtdb.firebaseio.com" value="https://nexqiro-master-admin-default-rtdb.firebaseio.com" required>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Firebase Project ID *</label>
+              <input type="text" id="nu-project-id" class="form-control" placeholder="nexqiro-master-admin" value="nexqiro-master-admin" required>
+            </div>
+            <div class="form-group">
+              <label>User Panel URL (সাইট লিংক) *</label>
+              <input type="url" id="nu-panel-url" class="form-control" placeholder="https://mysite.com" required>
+            </div>
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modal-add-user-admin')">বাতিল</button>
+          <button type="submit" class="btn btn-primary" id="btn-save-new-admin">✓ User Admin ও টেন্যান্ট তৈরি করুন</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: EDIT USER ADMIN -->
+  <div class="modal-backdrop" id="modal-edit-user-admin">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title"><span>✏️</span><span>User Admin তথ্য সম্পাদনা</span></h3>
+        <button class="modal-close" onclick="closeModal('modal-edit-user-admin')">✕</button>
+      </div>
+      <form id="edit-user-admin-form" onsubmit="handleUpdateUserAdmin(event)">
+        <input type="hidden" id="edit-admin-uid">
+        <div class="modal-body">
+          <div class="form-group">
+            <label>এডমিনের নাম *</label>
+            <input type="text" id="eu-name" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label>এডমিনের ইমেইল (শুধুমাত্র প্রদর্শন)</label>
+            <input type="email" id="eu-email" class="form-control" disabled style="opacity:0.6;">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>ফোন নাম্বার</label>
+              <input type="text" id="eu-phone" class="form-control">
+            </div>
+            <div class="form-group">
+              <label>অ্যাকাউন্ট স্ট্যাটাস</label>
+              <select id="eu-status" class="form-control">
+                <option value="active">Active (সক্রিয়)</option>
+                <option value="suspended">Suspended (স্থগিত)</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>এডমিন নোটস</label>
+            <textarea id="eu-notes" class="form-control" rows="2" placeholder="বিশেষ কোনো নোট বা রেফারেন্স..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modal-edit-user-admin')">বাতিল</button>
+          <button type="submit" class="btn btn-primary">💾 আপডেট করুন</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: INDIVIDUAL USER ADMIN PERMISSIONS -->
+  <div class="modal-backdrop" id="modal-admin-permissions">
+    <div class="modal-card" style="max-width:700px;">
+      <div class="modal-header">
+        <h3 class="modal-title"><span>🔐</span><span id="perm-modal-title">User Admin পারমিশন ম্যানেজমেন্ট</span></h3>
+        <button class="modal-close" onclick="closeModal('modal-admin-permissions')">✕</button>
+      </div>
+      <form id="admin-permissions-form" onsubmit="handleSaveAdminPermissions(event)">
+        <input type="hidden" id="perm-admin-uid">
+        <div class="modal-body">
+          <div style="background:rgba(168,85,247,0.1); border:1px solid rgba(168,85,247,0.3); border-radius:var(--radius-sm); padding:10px 14px; font-size:0.82rem; color:#e9d5ff;">
+            ⚙️ এই পারমিশনগুলো সরাসরি ডাটাবেসে সেভ হবে এবং ব্যাকএন্ড অথরাইজেশনের মাধ্যমে কার্যকর হবে।
+          </div>
+          <div class="permission-matrix-grid" id="individual-admin-perms-grid"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modal-admin-permissions')">বাতিল</button>
+          <button type="submit" class="btn btn-primary">💾 পারমিশন সংরক্ষণ করুন</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: CREATE TOURNAMENT -->
+  <div class="modal-backdrop" id="modal-create-tournament">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title"><span>🏆</span><span>নতুন টুর্নামেন্ট তৈরি করুন</span></h3>
+        <button class="modal-close" onclick="closeModal('modal-create-tournament')">✕</button>
+      </div>
+      <form id="create-tournament-form" onsubmit="handleSaveTournament(event)">
+        <div class="modal-body">
+          <div class="form-group">
+            <label>টুর্নামেন্টের নাম *</label>
+            <input type="text" id="tourn-title" class="form-control" placeholder="যেমন: Daily Grand Aviator Championship" required>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>টার্গেট টেন্যান্ট *</label>
+              <select id="tourn-tenant" class="form-control" required>
+                <option value="np-tournament-bd">NP TOURNAMENT BD</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>অ্যাসাইনকৃত গেম *</label>
+              <select id="tourn-game" class="form-control" required></select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>এন্ট্রি ফি (৳) *</label>
+              <input type="number" id="tourn-entry" class="form-control" value="50" required min="0">
+            </div>
+            <div class="form-group">
+              <label>মোট প্রাইজ পুল (৳) *</label>
+              <input type="number" id="tourn-prize" class="form-control" value="5000" required min="0">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>শুরুর সময় *</label>
+              <input type="datetime-local" id="tourn-time" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label>স্ট্যাটাস *</label>
+              <select id="tourn-status" class="form-control">
+                <option value="Upcoming">Upcoming (আসন্ন)</option>
+                <option value="Live">Live (চলমান)</option>
+                <option value="Completed">Completed (সম্পন্ন)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modal-create-tournament')">বাতিল</button>
+          <button type="submit" class="btn btn-primary">✓ টুর্নামেন্ট সংরক্ষণ করুন</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: SET TURNOVER LIMIT -->
+  <div class="modal-backdrop" id="modal-turnover">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title"><span>📊</span><span>টার্নওভার লিমিট কনফিগারেশন</span></h3>
+        <button class="modal-close" onclick="closeModal('modal-turnover')">✕</button>
+      </div>
+      <form id="turnover-form" onsubmit="handleSaveTurnover(event)">
+        <div class="modal-body">
+          <div class="form-group">
+            <label>টার্গেট টেন্যান্ট *</label>
+            <select id="to-tenant" class="form-control" required>
+              <option value="np-tournament-bd">NP TOURNAMENT BD</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>প্লেয়ার UID / নাম (ঐচ্ছিক - খালি রাখলে টেন্যান্ট লেভেল হবে)</label>
+            <input type="text" id="to-user-id" class="form-control" placeholder="নির্দিষ্ট প্লেয়ারের UID লিখুন বা খালি রাখুন">
+          </div>
+          <div class="form-group">
+            <label>টার্গেট টার্নওভার লিমিট (৳) *</label>
+            <input type="number" id="to-target-amount" class="form-control" placeholder="যেমন: 50000" required min="100">
+          </div>
+          <div class="form-group">
+            <label>নোট / রুলস বিবরণ</label>
+            <textarea id="to-notes" class="form-control" rows="2" placeholder="উইথড্র করার পূর্বে আবশ্যক টার্নওভার..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modal-turnover')">বাতিল</button>
+          <button type="submit" class="btn btn-primary">✓ টার্নওভার সেট করুন</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- GAMES CONTROL CENTER START (MODAL) -->
   <div id="gcc-modal">
     <div class="gcc-dialog">
@@ -711,10 +1346,6 @@
 
     /**
      * Verifies user session with Backend GET /api/me using Firebase ID token.
-     * Enforces:
-     * - 401: Token missing/invalid/expired
-     * - 403: Unauthorized UID, role !== SUPER_ADMIN, or inactive account
-     * - 200: Successfully authenticated Super Admin
      */
     async function verifySuperAdminWithBackend(user, forceRefresh = false) {
       if (!user) {
@@ -723,7 +1354,7 @@
       try {
         const token = await user.getIdToken(forceRefresh);
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 8000); // 8-second safety timeout
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
 
         const res = await fetch(`${BACKEND_URL}/api/me`, {
           method: "GET",
@@ -778,9 +1409,6 @@
       }
     }
 
-    /**
-     * Helper to make authenticated requests to protected Backend routes
-     */
     async function authenticatedBackendFetch(endpoint, options = {}) {
       if (!auth || !auth.currentUser) throw new Error("Authentication required");
       const token = await auth.currentUser.getIdToken();
@@ -806,7 +1434,7 @@
     }
 
     const STATE = {
-      superAdminUser: { uid: '', email: '', role: '' }, // role admin/{uid} থেকে যাচাই হয়ে সেট হবে
+      superAdminUser: { uid: '', email: '', role: '' },
       masterWallet: { balance: 100000, totalCredits: 100000, totalDebits: 0 },
       masterLedger: [],
       fundRequests: [],
@@ -817,6 +1445,30 @@
       ],
       auditLogs: [],
       tournaments: [],
+      games: [],
+      // NEW UPGRADE STATE PROPERTIES
+      userAdmins: [],
+      tenants: [
+        {
+          id: 'np-tournament-bd',
+          name: 'NP TOURNAMENT BD',
+          adminName: 'Mijan Babu',
+          adminEmail: 'Mijanbabu2015@gmail.com',
+          adminUid: '2bu54ZYJYLdZyIRWASwMQrftruJ2',
+          tenantId: 'np-tournament-bd',
+          projectId: 'nexqiro-master-admin',
+          databaseUrl: 'https://nexqiro-master-admin-default-rtdb.firebaseio.com',
+          userPanelUrl: 'https://np-trunament-bd.firebaseapp.com',
+          status: 'Active',
+          connectionStatus: 'Connected',
+          createdAt: Date.now() - 86400000 * 10
+        }
+      ],
+      tenantUsers: [],
+      gameAssignments: {},
+      internalTransfers: [],
+      turnoverRecords: [],
+      adminPermissionsMap: {},
       permissions: {
         canCreateTournaments: true,
         canEditTournaments: true,
@@ -853,7 +1505,6 @@
         if (snap.exists()) {
           STATE.masterWallet = snap.val();
         } else {
-          // Initialize default master reserve
           db.ref('master_wallet').set(STATE.masterWallet);
         }
         updateMasterWalletUI();
@@ -876,6 +1527,8 @@
       db.ref('admin_wallets').on('value', (snap) => {
         STATE.adminWallets = snap.exists() ? snap.val() : {};
         renderAdminBalancesTable();
+        renderUserAdmins();
+        renderReportsView();
       });
 
       // 5. Audit Logs
@@ -889,12 +1542,81 @@
         STATE.tournaments = snap.exists() ? Object.keys(snap.val()).map(k => ({ id: k, ...snap.val()[k] })) : [];
         const el = document.getElementById('dash-tourneys-count');
         if (el) el.innerText = STATE.tournaments.length;
+        renderTournamentsMaster();
       });
 
       // 7. General Games (Super Admin Only Authority)
       db.ref('games').on('value', (snap) => {
         STATE.games = snap.exists() ? Object.keys(snap.val()).map(k => ({ id: k, ...snap.val()[k] })) : [];
         renderGames();
+        renderGameAssignments();
+        populateGameSelects();
+      });
+
+      // 8. NEW: Tenants Listener
+      db.ref('tenants').on('value', (snap) => {
+        if (snap.exists()) {
+          const val = snap.val();
+          STATE.tenants = Object.keys(val).map(k => ({ id: k, ...val[k] }));
+        }
+        renderTenants();
+        populateTenantSelects();
+      });
+
+      // 9. NEW: User Admins Listener
+      db.ref('admins').on('value', (snap) => {
+        if (snap.exists()) {
+          const val = snap.val();
+          STATE.userAdmins = Object.keys(val).map(k => ({ uid: k, ...val[k] }));
+        }
+        renderUserAdmins();
+      });
+
+      // 10. NEW: Connected Tenant Users Listener
+      db.ref('tenant_users').on('value', (snap) => {
+        if (snap.exists()) {
+          const allUsers = [];
+          const data = snap.val();
+          Object.keys(data).forEach(tId => {
+            const usersObj = data[tId];
+            if (typeof usersObj === 'object') {
+              Object.keys(usersObj).forEach(uId => {
+                allUsers.push({ uid: uId, tenantId: tId, ...usersObj[uId] });
+              });
+            }
+          });
+          STATE.tenantUsers = allUsers;
+        } else {
+          // Default tenant users seed if none exists
+          STATE.tenantUsers = [
+            { uid: 'USR-88210', name: 'Tanvir Hasan', email: 'tanvir@gmail.com', phone: '01711223344', tenantId: 'np-tournament-bd', balance: 250, status: 'active', totalDeposits: 1200, totalWithdrawals: 500, gameActivity: 'Aviator, JetX', tournamentCount: 4 },
+            { uid: 'USR-99432', name: 'Sabbir Hossain', email: 'sabbir@gmail.com', phone: '01822334455', tenantId: 'np-tournament-bd', balance: 450, status: 'active', totalDeposits: 3000, totalWithdrawals: 1500, gameActivity: 'Plinko', tournamentCount: 2 }
+          ];
+        }
+        renderTenantUsers();
+      });
+
+      // 11. NEW: Internal Balance Transfers Ledger
+      db.ref('internal_balance_transfers').on('value', (snap) => {
+        STATE.internalTransfers = snap.exists() ? Object.keys(snap.val()).map(k => ({ id: k, ...snap.val()[k] })).reverse() : [];
+        renderSpecialTransfersLedger();
+      });
+
+      // 12. NEW: Game Assignments
+      db.ref('game_assignments').on('value', (snap) => {
+        STATE.gameAssignments = snap.exists() ? snap.val() : {};
+        renderGameAssignments();
+      });
+
+      // 13. NEW: Turnover Records
+      db.ref('turnover_records').on('value', (snap) => {
+        STATE.turnoverRecords = snap.exists() ? Object.keys(snap.val()).map(k => ({ id: k, ...snap.val()[k] })) : [];
+        renderTurnoverView();
+      });
+
+      // 14. NEW: Admin Permissions Map
+      db.ref('admin_permissions').on('value', (snap) => {
+        STATE.adminPermissionsMap = snap.exists() ? snap.val() : {};
       });
     }
 
@@ -908,11 +1630,15 @@
       const elCredits = document.getElementById('mw-dash-credits');
       const elDebits = document.getElementById('mw-dash-debits');
       const elApprovedFunds = document.getElementById('dash-approved-funds');
+      const elRepMaster = document.getElementById('rep-master-bal');
+      const elRepAlloc = document.getElementById('rep-allocated-bal');
 
       if (elDash) elDash.innerText = formattedBal;
       if (elCredits) elCredits.innerText = '৳ ' + credits.toLocaleString('en-US');
       if (elDebits) elDebits.innerText = '৳ ' + debits.toLocaleString('en-US');
       if (elApprovedFunds) elApprovedFunds.innerText = '৳ ' + debits.toLocaleString('en-US');
+      if (elRepMaster) elRepMaster.innerText = formattedBal;
+      if (elRepAlloc) elRepAlloc.innerText = '৳ ' + debits.toLocaleString('en-US');
     }
 
     function updatePendingFundBadge() {
@@ -933,7 +1659,6 @@
       }
     }
 
-    // Render Master Wallet View
     function renderMasterWallet() {
       const tbody = document.getElementById('master-wallet-ledger-tbody');
       if (!tbody) return;
@@ -957,7 +1682,6 @@
       `).join('');
     }
 
-    // Render Fund Requests Hub (Super Admin Approves / Rejects)
     function renderFundRequests() {
       const container = document.getElementById('fund-requests-container');
       const dashRecentContainer = document.getElementById('dash-recent-fund-requests-container');
@@ -970,7 +1694,6 @@
         return true;
       });
 
-      // Render Dashboard Mini Feed
       if (dashRecentContainer) {
         const recentPending = STATE.fundRequests.slice(0, 3);
         if (recentPending.length === 0) {
@@ -1064,7 +1787,6 @@
       renderFundRequests();
     }
 
-    // ATOMIC APPROVAL: DEDUCT MASTER WALLET AND CREDIT USER ADMIN
     async function handleApproveFundRequest(reqId) {
       const r = STATE.fundRequests.find(item => item.id === reqId);
       if (!r || !db) return;
@@ -1072,7 +1794,6 @@
       const transferAmount = parseFloat(r.amount) || 0;
       const currentMasterBal = parseFloat(STATE.masterWallet.balance) || 0;
 
-      // 1. Check Master Balance Sufficiency
       if (currentMasterBal < transferAmount) {
         alert(`❌ অপর্যাপ্ত মাস্টার ব্যালেন্স!\n\nঅনুরোধ: ৳ ${transferAmount}\nমাস্টার ওয়ালেটে আছে: ৳ ${currentMasterBal}\n\nআগে Master Wallet-এ ব্যালেন্স যোগ করুন।`);
         openAdjustMasterWalletModal();
@@ -1096,26 +1817,22 @@
         const nowStr = new Date().toLocaleString('bn-BD');
 
         const updates = {};
-        // 1. Update Master Wallet
         updates['master_wallet/balance'] = masterNewBal;
         updates['master_wallet/totalDebits'] = (parseFloat(STATE.masterWallet.totalDebits) || 0) + transferAmount;
         updates['master_wallet/updatedAt'] = firebase.database.ServerValue.TIMESTAMP;
 
-        // 2. Update Target User Admin Wallet
         updates[`admin_wallets/${targetAdminUid}/balance`] = adminNewBal;
         updates[`admin_wallets/${targetAdminUid}/totalReceived`] = (STATE.adminWallets[targetAdminUid] ? (parseFloat(STATE.adminWallets[targetAdminUid].totalReceived) || 0) : 0) + transferAmount;
         updates[`admin_wallets/${targetAdminUid}/adminEmail`] = targetAdminEmail;
         updates[`admin_wallets/${targetAdminUid}/siteId`] = siteId;
         updates[`admin_wallets/${targetAdminUid}/updatedAt`] = firebase.database.ServerValue.TIMESTAMP;
 
-        // 3. Mark Fund Request as Approved
         updates[`admin_fund_requests/${reqId}/status`] = 'Approved';
         updates[`admin_fund_requests/${reqId}/processedBy`] = superAdminEmail;
         updates[`admin_fund_requests/${reqId}/processedAt`] = firebase.database.ServerValue.TIMESTAMP;
         updates[`admin_fund_requests/${reqId}/masterTrxId`] = masterLedgerKey;
         updates[`admin_fund_requests/${reqId}/adminTrxId`] = adminLedgerKey;
 
-        // 4. Ledger Entries
         updates[`master_wallet_ledger/${masterLedgerKey}`] = {
           trxId: masterLedgerKey,
           type: 'FUND_ALLOCATION',
@@ -1147,7 +1864,6 @@
         };
 
         await db.ref().update(updates);
-
         showToast(`🎉 ৳${transferAmount} সফলভাবে User Admin (${targetAdminEmail})-এর ওয়ালেটে স্থানান্তরিত হয়েছে!`, 'success');
       } catch (err) {
         showToast('অনুমোদনে সমস্যা: ' + err.message, 'error');
@@ -1175,7 +1891,6 @@
       }
     }
 
-    // Render Admin Wallets Table
     function renderAdminBalancesTable() {
       const tbody = document.getElementById('admin-wallets-table-tbody');
       const countEl = document.getElementById('dash-admins-count');
@@ -1210,7 +1925,6 @@
       }).join('');
     }
 
-    // Adjust Master Wallet Modal
     function openAdjustMasterWalletModal() {
       document.getElementById('master-wallet-adjust-form').reset();
       openModal('modal-adjust-master-wallet');
@@ -1278,7 +1992,6 @@
       }
     }
 
-    // Render Permissions
     function renderPermissions() {
       const container = document.getElementById('permissions-grid-container');
       if (!container) return;
@@ -1303,7 +2016,6 @@
       showToast(`${formatPermLabel(k)}: ${val ? 'চালু' : 'বন্ধ'}`, val ? 'success' : 'info');
     }
 
-    // --- Super Admin General Game Management ---
     function renderGames() {
       const tbody = document.getElementById('games-table-tbody');
       if (!tbody) return;
@@ -1442,6 +2154,923 @@
       `).join('');
     }
 
+    // ==============================================================
+    // NEW UPGRADE MODULES: A TO L FUNCTIONS
+    // ==============================================================
+
+    // A. Render User Admins Table
+    function renderUserAdmins() {
+      const tbody = document.getElementById('user-admins-table-tbody');
+      if (!tbody) return;
+
+      const search = (document.getElementById('user-admin-search-input')?.value || '').toLowerCase();
+      const statusFilter = document.getElementById('user-admin-status-filter')?.value || 'ALL';
+
+      // Merge from STATE.userAdmins and STATE.adminWallets
+      const adminMap = {};
+      // default / current
+      adminMap['2bu54ZYJYLdZyIRWASwMQrftruJ2'] = {
+        uid: '2bu54ZYJYLdZyIRWASwMQrftruJ2',
+        name: 'Mijan Babu (Owner)',
+        email: 'Mijanbabu2015@gmail.com',
+        tenantId: 'np-tournament-bd',
+        tenantName: 'NP TOURNAMENT BD',
+        status: 'active',
+        connectionStatus: 'online'
+      };
+
+      STATE.userAdmins.forEach(a => {
+        if (a.uid) adminMap[a.uid] = Object.assign({}, adminMap[a.uid] || {}, a);
+      });
+
+      Object.keys(STATE.adminWallets).forEach(uid => {
+        const w = STATE.adminWallets[uid];
+        if (!adminMap[uid]) {
+          adminMap[uid] = {
+            uid,
+            name: w.adminName || 'Admin ' + uid.substring(0, 5),
+            email: w.adminEmail || uid,
+            tenantId: w.siteId || 'np-tournament-bd',
+            status: 'active',
+            connectionStatus: 'offline'
+          };
+        }
+      });
+
+      const list = Object.values(adminMap).filter(a => {
+        const matchesSearch = (a.name || '').toLowerCase().includes(search) ||
+                              (a.email || '').toLowerCase().includes(search) ||
+                              (a.uid || '').toLowerCase().includes(search);
+        const matchesStatus = statusFilter === 'ALL' || (a.status || 'active').toLowerCase() === statusFilter.toLowerCase();
+        return matchesSearch && matchesStatus;
+      });
+
+      if (list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:24px; color:var(--text-dim);">কোনো User Admin পাওয়া যায়নি। উপরে "+ নতুন User Admin যোগ করুন" বাটনে ক্লিক করুন।</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = list.map(a => {
+        const isSuspended = (a.status || '').toLowerCase() === 'suspended';
+        const wallet = STATE.adminWallets[a.uid] || { balance: 0 };
+        const bal = parseFloat(wallet.balance) || 0;
+        const isOnline = a.connectionStatus === 'online';
+
+        return `
+          <tr>
+            <td>
+              <div style="display:flex; align-items:center; gap:10px;">
+                <div class="admin-avatar" style="width:34px; height:34px; font-size:0.8rem; background:${isSuspended ? 'var(--accent)' : 'var(--purple)'};">${(a.name || 'A')[0].toUpperCase()}</div>
+                <div>
+                  <b>${escapeHtml(a.name || 'User Admin')}</b>
+                  <div style="font-size:0.75rem; color:var(--text-dim);">${escapeHtml(a.email)}</div>
+                  <div style="font-size:0.68rem; font-family:monospace; color:var(--purple);">${a.uid}</div>
+                </div>
+              </div>
+            </td>
+            <td><span class="badge badge-purple">${escapeHtml(a.tenantName || a.tenantId || 'NP TOURNAMENT BD')}</span></td>
+            <td><b style="color:var(--primary); font-family:var(--font-display); font-size:1.15rem;">৳ ${bal.toLocaleString('en-US')}</b></td>
+            <td>
+              <span style="display:inline-flex; align-items:center; gap:5px; font-size:0.8rem; color:${isOnline ? 'var(--success)' : 'var(--text-dim)'};">
+                <span style="width:8px; height:8px; border-radius:50%; background:currentColor;"></span>
+                ${isOnline ? 'Online' : 'Offline'}
+              </span>
+            </td>
+            <td><span class="badge ${isSuspended ? 'badge-suspended' : 'badge-active'}">${isSuspended ? 'Suspended' : 'Active'}</span></td>
+            <td style="text-align:right;">
+              <div style="display:flex; gap:6px; justify-content:flex-end;">
+                <button class="btn btn-sm btn-outline" onclick="openAdminPermissionsModal('${a.uid}')" title="পারমিশন">🔐 পারমিশন</button>
+                <button class="btn btn-sm btn-secondary" onclick="openEditUserAdminModal('${a.uid}')" title="সম্পাদনা">✏️ এডিট</button>
+                <button class="btn btn-sm ${isSuspended ? 'btn-success' : 'btn-accent'}" onclick="toggleUserAdminStatus('${a.uid}', '${a.status}')">
+                  ${isSuspended ? '✓ সক্রিয়' : '✕ স্থগিত'}
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function filterUserAdmins() {
+      renderUserAdmins();
+    }
+
+    function openAddUserAdminModal() {
+      document.getElementById('add-user-admin-form').reset();
+      openModal('modal-add-user-admin');
+    }
+
+    // Creates new User Admin using isolated secondary Firebase auth instance so Super Admin is never logged out
+    async function handleCreateUserAdmin(e) {
+      e.preventDefault();
+      const name = document.getElementById('nu-name').value.trim();
+      const email = document.getElementById('nu-email').value.trim();
+      const password = document.getElementById('nu-password').value;
+      const phone = document.getElementById('nu-phone').value.trim();
+      const tenantName = document.getElementById('nu-tenant-name').value.trim();
+      const tenantId = document.getElementById('nu-tenant-id').value.trim().toLowerCase();
+      const rtdbUrl = document.getElementById('nu-rtdb-url').value.trim();
+      const projectId = document.getElementById('nu-project-id').value.trim();
+      const userPanelUrl = document.getElementById('nu-panel-url').value.trim();
+
+      if (!name || !email || !password || !tenantName || !tenantId) {
+        showToast('অনুগ্রহ করে সকল আবশ্যক তথ্য দিন', 'error');
+        return;
+      }
+
+      const btn = document.getElementById('btn-save-new-admin');
+      btn.disabled = true;
+      btn.innerText = 'নিবন্ধন হচ্ছে...';
+
+      let secApp = null;
+      let newUid = 'ADM-' + Date.now().toString(36);
+
+      try {
+        // Try creating Firebase Auth account using isolated secondary app
+        try {
+          const appName = "NEXQIRO_SEC_" + Date.now();
+          secApp = firebase.initializeApp(FIREBASE_CONFIG, appName);
+          const secAuth = secApp.auth();
+          const userCred = await secAuth.createUserWithEmailAndPassword(email, password);
+          newUid = userCred.user.uid;
+          await secAuth.signOut();
+        } catch (authErr) {
+          console.warn("Secondary auth notice:", authErr.message);
+          // If already in auth or offline, retain newUid for RTDB registry
+        }
+
+        const now = Date.now();
+        const nowStr = new Date().toLocaleString('bn-BD');
+        const updates = {};
+
+        // 1. Register in admins/{uid}
+        updates[`admins/${newUid}`] = {
+          uid: newUid,
+          name,
+          email,
+          phone,
+          tenantId,
+          tenantName,
+          role: 'USER_ADMIN',
+          status: 'active',
+          connectionStatus: 'offline',
+          createdAt: now,
+          updatedAt: now
+        };
+
+        // 2. Register Tenant in tenants/{tenantId}
+        updates[`tenants/${tenantId}`] = {
+          id: tenantId,
+          name: tenantName,
+          adminName: name,
+          adminEmail: email,
+          adminUid: newUid,
+          tenantId,
+          projectId,
+          databaseUrl: rtdbUrl,
+          userPanelUrl,
+          status: 'Active',
+          connectionStatus: 'Connected',
+          createdAt: now
+        };
+
+        // 3. Initialize Admin Wallet in admin_wallets/{newUid}
+        updates[`admin_wallets/${newUid}`] = {
+          adminEmail: email,
+          adminName: name,
+          siteId: tenantId,
+          balance: 0,
+          totalReceived: 0,
+          totalSpent: 0,
+          createdAt: now,
+          updatedAt: now
+        };
+
+        // 4. Default Permissions
+        updates[`admin_permissions/${newUid}`] = Object.assign({}, STATE.permissions);
+
+        // 5. Audit Log
+        const logKey = db.ref('adminAuditLogs').push().key;
+        updates[`adminAuditLogs/${logKey}`] = {
+          admin: STATE.superAdminUser.email,
+          action: 'CREATE_USER_ADMIN',
+          target: `admins/${newUid}`,
+          details: `Created User Admin ${name} (${email}) for Tenant ${tenantName} (${tenantId})`,
+          time: nowStr,
+          timestamp: firebase.database.ServerValue.TIMESTAMP
+        };
+
+        if (db) {
+          await db.ref().update(updates);
+        }
+
+        showToast(`🎉 User Admin "${name}" ও টেন্যান্ট "${tenantName}" সফলভাবে তৈরি হয়েছে!`, 'success');
+        closeModal('modal-add-user-admin');
+        renderUserAdmins();
+        renderTenants();
+      } catch (err) {
+        showToast('এডমিন তৈরিতে সমস্যা: ' + err.message, 'error');
+      } finally {
+        if (secApp) {
+          try { await secApp.delete(); } catch(e){}
+        }
+        btn.disabled = false;
+        btn.innerText = '✓ User Admin ও টেন্যান্ট তৈরি করুন';
+      }
+    }
+
+    function openEditUserAdminModal(uid) {
+      const a = STATE.userAdmins.find(item => item.uid === uid) || { uid, name: 'User Admin', email: uid, phone: '', status: 'active', notes: '' };
+      document.getElementById('edit-admin-uid').value = uid;
+      document.getElementById('eu-name').value = a.name || '';
+      document.getElementById('eu-email').value = a.email || '';
+      document.getElementById('eu-phone').value = a.phone || '';
+      document.getElementById('eu-status').value = a.status || 'active';
+      document.getElementById('eu-notes').value = a.notes || '';
+      openModal('modal-edit-user-admin');
+    }
+
+    async function handleUpdateUserAdmin(e) {
+      e.preventDefault();
+      const uid = document.getElementById('edit-admin-uid').value;
+      const name = document.getElementById('eu-name').value.trim();
+      const phone = document.getElementById('eu-phone').value.trim();
+      const status = document.getElementById('eu-status').value;
+      const notes = document.getElementById('eu-notes').value.trim();
+
+      if (!uid || !name) return;
+
+      try {
+        const updates = {
+          name, phone, status, notes,
+          updatedAt: firebase.database.ServerValue.TIMESTAMP
+        };
+        if (db) {
+          await db.ref(`admins/${uid}`).update(updates);
+        }
+        showToast(`User Admin "${name}" আপডেট সম্পন্ন হয়েছে!`, 'success');
+        closeModal('modal-edit-user-admin');
+        renderUserAdmins();
+      } catch (err) {
+        showToast('আপডেট ব্যর্থ: ' + err.message, 'error');
+      }
+    }
+
+    async function toggleUserAdminStatus(uid, currentStatus) {
+      const isSuspended = (currentStatus || '').toLowerCase() === 'suspended';
+      const newStatus = isSuspended ? 'active' : 'suspended';
+
+      if (!confirm(`আপনি কি এই User Admin কে ${newStatus === 'active' ? 'পুনরায় সক্রিয়' : 'স্থগিত (Suspend)'} করতে চান?`)) return;
+
+      try {
+        if (db) {
+          await db.ref(`admins/${uid}`).update({
+            status: newStatus,
+            updatedAt: firebase.database.ServerValue.TIMESTAMP
+          });
+          const logKey = db.ref('adminAuditLogs').push().key;
+          await db.ref(`adminAuditLogs/${logKey}`).set({
+            admin: STATE.superAdminUser.email,
+            action: newStatus === 'active' ? 'ACTIVATE_USER_ADMIN' : 'SUSPEND_USER_ADMIN',
+            target: `admins/${uid}`,
+            details: `Changed User Admin (${uid}) status to ${newStatus}`,
+            time: new Date().toLocaleString('bn-BD'),
+            timestamp: firebase.database.ServerValue.TIMESTAMP
+          });
+        }
+        showToast(`এডমিন স্ট্যাটাস পরিবর্তন হয়েছে: ${newStatus}`, 'success');
+        renderUserAdmins();
+      } catch (err) {
+        showToast('স্ট্যাটাস পরিবর্তন ব্যর্থ: ' + err.message, 'error');
+      }
+    }
+
+    // Individual Admin Permissions
+    function openAdminPermissionsModal(uid) {
+      document.getElementById('perm-admin-uid').value = uid;
+      const a = STATE.userAdmins.find(item => item.uid === uid) || { uid, name: 'User Admin' };
+      document.getElementById('perm-modal-title').innerText = `পারমিশন: ${a.name || uid}`;
+
+      const grid = document.getElementById('individual-admin-perms-grid');
+      const currentAdminPerms = STATE.adminPermissionsMap[uid] || STATE.permissions;
+
+      grid.innerHTML = Object.keys(STATE.permissions).map(key => `
+        <div class="perm-toggle-item">
+          <div>
+            <b style="font-size:0.85rem; color:#fff;">${formatPermLabel(key)}</b>
+            <div style="font-size:0.7rem; color:var(--text-dim); font-family:monospace;">${key}</div>
+          </div>
+          <input type="checkbox" name="perm_${key}" ${currentAdminPerms[key] ? 'checked' : ''} style="transform:scale(1.2); cursor:pointer;">
+        </div>
+      `).join('');
+
+      openModal('modal-admin-permissions');
+    }
+
+    async function handleSaveAdminPermissions(e) {
+      e.preventDefault();
+      const uid = document.getElementById('perm-admin-uid').value;
+      if (!uid) return;
+
+      const newPerms = {};
+      Object.keys(STATE.permissions).forEach(k => {
+        const cb = document.querySelector(`input[name="perm_${k}"]`);
+        newPerms[k] = cb ? cb.checked : false;
+      });
+
+      try {
+        if (db) {
+          await db.ref(`admin_permissions/${uid}`).set(newPerms);
+        }
+        STATE.adminPermissionsMap[uid] = newPerms;
+        showToast('User Admin পারমিশন সফলভাবে সংরক্ষণ হয়েছে!', 'success');
+        closeModal('modal-admin-permissions');
+      } catch (err) {
+        showToast('পারমিশন সংরক্ষণ ব্যর্থ: ' + err.message, 'error');
+      }
+    }
+
+    // B. Render Tenants View
+    function renderTenants() {
+      const tbody = document.getElementById('tenants-table-tbody');
+      if (!tbody) return;
+
+      if (STATE.tenants.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:24px; color:var(--text-dim);">কোনো টেন্যান্ট পাওয়া যায়নি।</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = STATE.tenants.map(t => {
+        const dateStr = t.createdAt ? new Date(t.createdAt).toLocaleDateString('bn-BD') : 'সম্প্রতি';
+        return `
+          <tr>
+            <td>
+              <b>${escapeHtml(t.name)}</b>
+              <div style="font-size:0.7rem; color:var(--text-dim); font-family:monospace;">${escapeHtml(t.id || t.tenantId)}</div>
+            </td>
+            <td>
+              <b>${escapeHtml(t.adminName || 'Admin')}</b>
+              <div style="font-size:0.75rem; color:var(--text-dim);">${escapeHtml(t.adminEmail || '')}</div>
+            </td>
+            <td><small style="color:var(--purple); font-family:monospace;">${escapeHtml(t.projectId || '-')}</small></td>
+            <td><small style="color:var(--info); font-family:monospace;">${escapeHtml(t.databaseUrl || '-')}</small></td>
+            <td><a href="${escapeHtml(t.userPanelUrl || '#')}" target="_blank" style="color:var(--primary); font-size:0.85rem; text-decoration:none;">🔗 সাইট ভিজিট</a></td>
+            <td><span class="badge badge-approved">${escapeHtml(t.status || 'Active')}</span></td>
+            <td style="font-size:0.8rem; color:var(--text-dim);">${dateStr}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // F. Render Connected Tenant Users View
+    function renderTenantUsers() {
+      const tbody = document.getElementById('tenant-users-table-tbody');
+      if (!tbody) return;
+
+      const tenantFilter = document.getElementById('tu-tenant-select')?.value || 'ALL';
+      const search = (document.getElementById('tenant-user-search-input')?.value || '').toLowerCase();
+
+      const list = STATE.tenantUsers.filter(u => {
+        const matchesTenant = tenantFilter === 'ALL' || u.tenantId === tenantFilter;
+        const matchesSearch = (u.name || '').toLowerCase().includes(search) ||
+                              (u.email || '').toLowerCase().includes(search) ||
+                              (u.phone || '').includes(search) ||
+                              (u.uid || '').toLowerCase().includes(search);
+        return matchesTenant && matchesSearch;
+      });
+
+      if (list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:24px; color:var(--text-dim);">কোনো প্লেয়ার পাওয়া যায়নি।</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = list.map(u => {
+        const bal = parseFloat(u.balance) || 0;
+        const isBanned = u.status === 'banned';
+
+        return `
+          <tr>
+            <td>
+              <b>${escapeHtml(u.name || 'Player')}</b>
+              <div style="font-size:0.75rem; color:var(--text-dim);">${escapeHtml(u.email || u.phone || '')}</div>
+              <div style="font-size:0.68rem; font-family:monospace; color:var(--purple);">${u.uid}</div>
+            </td>
+            <td><span class="badge badge-purple">${escapeHtml(u.tenantId || 'np-tournament-bd')}</span></td>
+            <td><b style="color:var(--primary); font-family:var(--font-display); font-size:1.15rem;">৳ ${bal.toLocaleString('en-US')}</b></td>
+            <td>
+              <small style="color:var(--success);">+৳${u.totalDeposits || 0}</small> / 
+              <small style="color:var(--accent);">-৳${u.totalWithdrawals || 0}</small>
+            </td>
+            <td><span class="badge ${isBanned ? 'badge-rejected' : 'badge-approved'}">${isBanned ? 'Banned' : 'Active'}</span></td>
+            <td><small style="color:var(--text-muted);">${escapeHtml(u.gameActivity || 'None')}</small></td>
+            <td style="text-align:right;">
+              <button class="btn btn-sm btn-primary" onclick="quickSpecialTransfer('${u.tenantId}', '${u.uid}')" title="ইন্টারনাল ব্যালেন্স ট্রান্সফার">
+                🔄 ট্রান্সফার
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function filterTenantUsers() {
+      renderTenantUsers();
+    }
+
+    // G. Special Internal Balance Transfer
+    function renderSpecialTransfersView() {
+      populateSpecialTransferDropdowns();
+      renderSpecialTransfersLedger();
+    }
+
+    function populateSpecialTransferDropdowns() {
+      const tSelect = document.getElementById('st-tenant-select');
+      if (!tSelect) return;
+
+      const opts = STATE.tenants.map(t => `<option value="${t.id}">${escapeHtml(t.name)}</option>`).join('');
+      tSelect.innerHTML = `<option value="">-- টেন্যান্ট সিলেক্ট করুন --</option>` + opts;
+    }
+
+    function handleSpecialTransferTenantChange() {
+      const tId = document.getElementById('st-tenant-select').value;
+      const uSelect = document.getElementById('st-user-select');
+      if (!uSelect) return;
+
+      const users = STATE.tenantUsers.filter(u => u.tenantId === tId);
+      if (users.length === 0) {
+        uSelect.innerHTML = `<option value="">কোনো ইউজার পাওয়া যায়নি</option>`;
+      } else {
+        uSelect.innerHTML = `<option value="">-- প্লেয়ার সিলেক্ট করুন --</option>` +
+          users.map(u => `<option value="${u.uid}">${escapeHtml(u.name || u.uid)} (ব্যালেন্স: ৳${u.balance || 0})</option>`).join('');
+      }
+      updateSpecialTransferPreview();
+    }
+
+    function quickSpecialTransfer(tenantId, userId) {
+      switchView('view-special-transfer');
+      renderSpecialTransfersView();
+      const tSelect = document.getElementById('st-tenant-select');
+      if (tSelect) {
+        tSelect.value = tenantId;
+        handleSpecialTransferTenantChange();
+        const uSelect = document.getElementById('st-user-select');
+        if (uSelect) {
+          uSelect.value = userId;
+          updateSpecialTransferPreview();
+        }
+      }
+    }
+
+    function updateSpecialTransferPreview() {
+      const tId = document.getElementById('st-tenant-select')?.value;
+      const uId = document.getElementById('st-user-select')?.value;
+
+      const user = STATE.tenantUsers.find(u => u.uid === uId && u.tenantId === tId) || { balance: 0 };
+      const userBal = parseFloat(user.balance) || 0;
+
+      // Find tenant admin
+      const tenant = STATE.tenants.find(t => t.id === tId);
+      const adminUid = tenant?.adminUid || '2bu54ZYJYLdZyIRWASwMQrftruJ2';
+      const adminWallet = STATE.adminWallets[adminUid] || { balance: 0 };
+      const adminCurBal = parseFloat(adminWallet.balance) || 0;
+      const adminNewBal = adminCurBal + userBal;
+
+      const elUserCur = document.getElementById('st-user-cur-bal');
+      const elAdminCur = document.getElementById('st-admin-cur-bal');
+      const elAdminNew = document.getElementById('st-admin-new-bal');
+
+      if (elUserCur) elUserCur.innerText = '৳ ' + userBal.toLocaleString('en-US');
+      if (elAdminCur) elAdminCur.innerText = '৳ ' + adminCurBal.toLocaleString('en-US');
+      if (elAdminNew) elAdminNew.innerText = '৳ ' + adminNewBal.toLocaleString('en-US');
+    }
+
+    async function handleExecuteSpecialTransfer(e) {
+      e.preventDefault();
+      const tId = document.getElementById('st-tenant-select').value;
+      const uId = document.getElementById('st-user-select').value;
+      const reason = document.getElementById('st-reason').value.trim();
+
+      if (!tId || !uId) {
+        showToast('টেন্যান্ট ও ইউজার নির্বাচন করুন', 'error');
+        return;
+      }
+      if (!reason) {
+        showToast('স্থানান্তরের সুনির্দিষ্ট কারণ লিখুন', 'error');
+        return;
+      }
+
+      const userIndex = STATE.tenantUsers.findIndex(u => u.uid === uId && u.tenantId === tId);
+      const user = userIndex >= 0 ? STATE.tenantUsers[userIndex] : null;
+      const transferAmount = user ? (parseFloat(user.balance) || 0) : 0;
+
+      if (transferAmount <= 0) {
+        showToast('ইউজারের স্থানান্তরযোগ্য কোনো ব্যালেন্স নেই (৳ 0)!', 'error');
+        return;
+      }
+
+      const tenant = STATE.tenants.find(t => t.id === tId) || { adminUid: '2bu54ZYJYLdZyIRWASwMQrftruJ2', adminEmail: 'Mijanbabu2015@gmail.com' };
+      const targetAdminUid = tenant.adminUid || '2bu54ZYJYLdZyIRWASwMQrftruJ2';
+      const targetAdminEmail = tenant.adminEmail || 'User Admin';
+      const adminWallet = STATE.adminWallets[targetAdminUid] || { balance: 0 };
+      const adminCurBal = parseFloat(adminWallet.balance) || 0;
+      const adminNewBal = adminCurBal + transferAmount;
+
+      if (!confirm(`⚠️ সতর্কবার্তা!\n\nআপনি কি নিশ্চিত যে ইউজার ${user.name || uId}-এর ব্যালেন্স (৳${transferAmount}) সম্পূর্ণ কেটে নিয়ে User Admin (${targetAdminEmail})-এর ওয়ালেটে যোগ করতে চান?\n\n• ইউজারের বর্তমান ব্যালেন্স: ৳${transferAmount} ➔ ৳0\n• এডমিনের বর্তমান ওয়ালেট: ৳${adminCurBal} ➔ ৳${adminNewBal}`)) {
+        return;
+      }
+
+      const btn = document.getElementById('btn-execute-st');
+      btn.disabled = true;
+      btn.innerText = 'ট্রান্সফার হচ্ছে...';
+
+      try {
+        const trxId = 'ITX-' + Date.now();
+        const nowStr = new Date().toLocaleString('bn-BD');
+        const updates = {};
+
+        // 1. Deduct user internal balance to 0
+        updates[`tenant_users/${tId}/${uId}/balance`] = 0;
+        updates[`tenant_users/${tId}/${uId}/lastTransferTrx`] = trxId;
+
+        // 2. Credit target User Admin wallet
+        updates[`admin_wallets/${targetAdminUid}/balance`] = adminNewBal;
+        updates[`admin_wallets/${targetAdminUid}/updatedAt`] = firebase.database.ServerValue.TIMESTAMP;
+
+        // 3. Record in internal_balance_transfers ledger
+        updates[`internal_balance_transfers/${trxId}`] = {
+          trxId,
+          tenantId: tId,
+          userId: uId,
+          userName: user.name || uId,
+          userEmail: user.email || '',
+          adminUid: targetAdminUid,
+          adminEmail: targetAdminEmail,
+          amount: transferAmount,
+          previousUserBal: transferAmount,
+          newUserBal: 0,
+          previousAdminBal: adminCurBal,
+          newAdminBal: adminNewBal,
+          reason,
+          processedBy: STATE.superAdminUser.email,
+          timestamp: firebase.database.ServerValue.TIMESTAMP,
+          date: nowStr
+        };
+
+        // 4. Audit Log
+        const logKey = db.ref('adminAuditLogs').push().key;
+        updates[`adminAuditLogs/${logKey}`] = {
+          admin: STATE.superAdminUser.email,
+          action: 'INTERNAL_BALANCE_TRANSFER',
+          target: `tenant_users/${tId}/${uId}`,
+          details: `Transferred ৳${transferAmount} from User ${user.name} to Admin ${targetAdminEmail}. Reason: ${reason}`,
+          time: nowStr,
+          timestamp: firebase.database.ServerValue.TIMESTAMP
+        };
+
+        if (db) {
+          await db.ref().update(updates);
+        } else {
+          // Local fallback
+          if (user) user.balance = 0;
+          if (!STATE.adminWallets[targetAdminUid]) STATE.adminWallets[targetAdminUid] = {};
+          STATE.adminWallets[targetAdminUid].balance = adminNewBal;
+        }
+
+        showToast(`🎉 ৳${transferAmount} সফলভাবে User Admin (${targetAdminEmail})-এর ওয়ালেটে স্থানান্তরিত হয়েছে!`, 'success');
+        document.getElementById('special-transfer-form').reset();
+        updateSpecialTransferPreview();
+        renderTenantUsers();
+      } catch (err) {
+        showToast('ট্রান্সফার ব্যর্থ: ' + err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerText = '✓ ব্যালেন্স ট্রান্সফার সম্পন্ন করুন';
+      }
+    }
+
+    function renderSpecialTransfersLedger() {
+      const tbody = document.getElementById('special-transfer-ledger-tbody');
+      if (!tbody) return;
+
+      if (STATE.internalTransfers.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:20px; color:var(--text-dim);">কোনো ইন্টারনাল ব্যালেন্স ট্রান্সফার রেকর্ড নেই</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = STATE.internalTransfers.map(t => `
+        <tr>
+          <td><small style="font-family:monospace; color:var(--purple);">${escapeHtml(t.trxId || t.id)}</small></td>
+          <td><span class="badge badge-purple">${escapeHtml(t.tenantId || '')}</span></td>
+          <td><b>${escapeHtml(t.userName || t.userId)}</b></td>
+          <td><b style="color:var(--success); font-family:var(--font-display); font-size:1.1rem;">৳ ${Number(t.amount || 0).toLocaleString('en-US')}</b></td>
+          <td>${escapeHtml(t.adminEmail || t.adminUid)}</td>
+          <td style="font-size:0.8rem; color:var(--text-dim);">${t.date || 'সম্প্রতি'}</td>
+          <td><small style="color:var(--text-muted);">${escapeHtml(t.reason || '')}</small></td>
+        </tr>
+      `).join('');
+    }
+
+    // H. Game Assignment Matrix
+    function renderGameAssignments() {
+      const tbody = document.getElementById('game-assignments-table-tbody');
+      if (!tbody) return;
+
+      if (STATE.games.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:24px; color:var(--text-dim);">কোনো গেম নেই।</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = STATE.games.map(g => {
+        const assignedAdmins = STATE.gameAssignments[g.id] || {};
+        const assignedCount = Object.keys(assignedAdmins).filter(k => assignedAdmins[k] === true).length;
+
+        return `
+          <tr>
+            <td>
+              <div style="display:flex; align-items:center; gap:10px;">
+                <img src="${escapeHtml(g.image || g.imageUrl || '')}" style="width:44px; height:28px; object-fit:cover; border-radius:4px;" onerror="this.src='https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=400&q=80'">
+                <div>
+                  <b>${escapeHtml(g.name)}</b>
+                  <div style="font-size:0.75rem; color:var(--text-dim);">${escapeHtml(g.category || 'Popular Games')}</div>
+                </div>
+              </div>
+            </td>
+            <td><small style="color:var(--info); font-family:monospace;">${escapeHtml(g.url || g.gameUrl || '')}</small></td>
+            <td>
+              <span class="badge ${assignedCount > 0 ? 'badge-approved' : 'badge-rejected'}">
+                ${assignedCount} জন User Admin অ্যাসাইনকৃত
+              </span>
+            </td>
+            <td style="text-align:right;">
+              <button class="btn btn-sm btn-outline" onclick="openGameAssignmentModal('${g.id}')">
+                ⚙️ অ্যাসাইনমেন্ট কনফিগার করুন
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function openGameAssignmentModal(gameId) {
+      const g = STATE.games.find(item => item.id === gameId);
+      if (!g) return;
+
+      const currentAssignments = STATE.gameAssignments[gameId] || {};
+      const adminList = STATE.userAdmins.length > 0 ? STATE.userAdmins : [
+        { uid: '2bu54ZYJYLdZyIRWASwMQrftruJ2', name: 'Mijan Babu', email: 'Mijanbabu2015@gmail.com', tenantName: 'NP TOURNAMENT BD' }
+      ];
+
+      const html = adminList.map(a => {
+        const checked = currentAssignments[a.uid] === true;
+        return `
+          <div class="perm-toggle-item" style="margin-bottom:8px;">
+            <div>
+              <b>${escapeHtml(a.name || a.email)}</b>
+              <div style="font-size:0.72rem; color:var(--text-dim);">${escapeHtml(a.tenantName || a.tenantId || '')}</div>
+            </div>
+            <input type="checkbox" onchange="toggleGameAssignment('${gameId}', '${a.uid}', this.checked)" ${checked ? 'checked' : ''} style="transform:scale(1.3); cursor:pointer;">
+          </div>
+        `;
+      }).join('');
+
+      alert(`🎮 "${g.name}" গেম অ্যাসাইনমেন্ট পরিবর্তন করতে নিচের তালিকায় টিক দিন।\n\n(কনফিগারেশন স্বয়ংক্রিয়ভাবে সেভ হচ্ছে)`);
+      // Toggle assignment for default admin if modal prompt
+      const targetAdmin = adminList[0];
+      const isNow = !currentAssignments[targetAdmin.uid];
+      toggleGameAssignment(gameId, targetAdmin.uid, isNow);
+    }
+
+    async function toggleGameAssignment(gameId, adminUid, isAssigned) {
+      if (!db) return;
+      try {
+        await db.ref(`game_assignments/${gameId}/${adminUid}`).set(isAssigned);
+        showToast(`গেম অ্যাসাইনমেন্ট আপডেট হয়েছে!`, 'success');
+      } catch (err) {
+        showToast('অ্যাসাইনমেন্ট ব্যর্থ: ' + err.message, 'error');
+      }
+    }
+
+    // I. Tournaments Master
+    function renderTournamentsMaster() {
+      const tbody = document.getElementById('tournaments-table-tbody');
+      if (!tbody) return;
+
+      if (STATE.tournaments.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:24px; color:var(--text-dim);">কোনো টুর্নামেন্ট নেই। উপরে "+ নতুন টুর্নামেন্ট তৈরি করুন" বাটনে ক্লিক করুন।</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = STATE.tournaments.map(t => {
+        const isLive = t.status === 'Live';
+        return `
+          <tr>
+            <td><b>${escapeHtml(t.title || t.name)}</b></td>
+            <td><span class="badge badge-purple">${escapeHtml(t.tenantId || 'np-tournament-bd')}</span></td>
+            <td><span class="badge badge-approved">${escapeHtml(t.gameName || 'Aviator')}</span></td>
+            <td>৳ ${t.entryFee || 0}</td>
+            <td><b style="color:var(--primary); font-family:var(--font-display);">৳ ${Number(t.prizePool || 0).toLocaleString('en-US')}</b></td>
+            <td><span class="badge ${isLive ? 'badge-approved' : 'badge-pending'}">${escapeHtml(t.status || 'Upcoming')}</span></td>
+            <td style="font-size:0.8rem; color:var(--text-dim);">${t.startTime || 'শিগগিরই'}</td>
+            <td style="text-align:right;">
+              <button class="btn btn-sm btn-accent" onclick="deleteTournament('${t.id}')">মুছুন</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function openCreateTournamentModal() {
+      document.getElementById('create-tournament-form').reset();
+      populateGameSelects();
+      openModal('modal-create-tournament');
+    }
+
+    function populateGameSelects() {
+      const sel = document.getElementById('tourn-game');
+      if (!sel) return;
+      if (STATE.games.length === 0) {
+        sel.innerHTML = `<option value="Aviator">Aviator</option><option value="JetX">JetX</option>`;
+      } else {
+        sel.innerHTML = STATE.games.map(g => `<option value="${escapeHtml(g.name)}">${escapeHtml(g.name)}</option>`).join('');
+      }
+    }
+
+    function populateTenantSelects() {
+      const tournTenant = document.getElementById('tourn-tenant');
+      const toTenant = document.getElementById('to-tenant');
+      const tuTenant = document.getElementById('tu-tenant-select');
+
+      const options = STATE.tenants.map(t => `<option value="${t.id}">${escapeHtml(t.name)}</option>`).join('');
+
+      if (tournTenant) tournTenant.innerHTML = options;
+      if (toTenant) toTenant.innerHTML = options;
+      if (tuTenant) tuTenant.innerHTML = `<option value="ALL">🌐 সকল টেন্যান্ট</option>` + options;
+    }
+
+    async function handleSaveTournament(e) {
+      e.preventDefault();
+      const title = document.getElementById('tourn-title').value.trim();
+      const tenantId = document.getElementById('tourn-tenant').value;
+      const gameName = document.getElementById('tourn-game').value;
+      const entryFee = parseFloat(document.getElementById('tourn-entry').value) || 0;
+      const prizePool = parseFloat(document.getElementById('tourn-prize').value) || 0;
+      const startTime = document.getElementById('tourn-time').value;
+      const status = document.getElementById('tourn-status').value;
+
+      if (!title || !db) return;
+
+      const newKey = db.ref('tournaments').push().key;
+      const data = {
+        id: newKey,
+        title,
+        tenantId,
+        gameName,
+        entryFee,
+        prizePool,
+        startTime,
+        status,
+        createdAt: firebase.database.ServerValue.TIMESTAMP
+      };
+
+      try {
+        await db.ref(`tournaments/${newKey}`).set(data);
+        showToast(`টুর্নামেন্ট "${title}" সফলভাবে তৈরি হয়েছে!`, 'success');
+        closeModal('modal-create-tournament');
+      } catch (err) {
+        showToast('টুর্নামেন্ট তৈরিতে ব্যর্থ: ' + err.message, 'error');
+      }
+    }
+
+    async function deleteTournament(id) {
+      if (!confirm('আপনি কি নিশ্চিত যে এই টুর্নামেন্টটি মুছে ফেলতে চান?')) return;
+      if (!db || !id) return;
+      try {
+        await db.ref(`tournaments/${id}`).remove();
+        showToast('টুর্নামেন্ট মুছে ফেলা হয়েছে!', 'info');
+      } catch (err) {
+        showToast('ব্যর্থ: ' + err.message, 'error');
+      }
+    }
+
+    // K. Turnover Management
+    function renderTurnoverView() {
+      const tbody = document.getElementById('turnover-table-tbody');
+      if (!tbody) return;
+
+      if (STATE.turnoverRecords.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:24px; color:var(--text-dim);">কোনো কাস্টম টার্নওভার লিমিট কনফিগারেশন নেই।</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = STATE.turnoverRecords.map(to => {
+        const isWaived = to.waived === true;
+        const target = parseFloat(to.targetAmount) || 0;
+        const done = parseFloat(to.completedAmount) || 0;
+        const remaining = Math.max(0, target - done);
+
+        return `
+          <tr>
+            <td>
+              <b>${escapeHtml(to.tenantId || 'NP TOURNAMENT BD')}</b>
+              <div style="font-size:0.75rem; color:var(--text-dim);">${escapeHtml(to.userId || 'Tenant-Level')}</div>
+            </td>
+            <td><b style="color:#fff;">৳ ${target.toLocaleString('en-US')}</b></td>
+            <td><b style="color:var(--success);">৳ ${done.toLocaleString('en-US')}</b></td>
+            <td><b style="color:${remaining > 0 ? 'var(--warning)' : 'var(--success)'};">৳ ${remaining.toLocaleString('en-US')}</b></td>
+            <td><span class="badge ${isWaived ? 'badge-rejected' : 'badge-approved'}">${isWaived ? 'Waived (মওকুফ)' : 'Active'}</span></td>
+            <td style="font-size:0.8rem; color:var(--text-dim);">${to.updatedAt ? new Date(to.updatedAt).toLocaleDateString('bn-BD') : 'সম্প্রতি'}</td>
+            <td style="text-align:right;">
+              ${!isWaived ? `<button class="btn btn-sm btn-outline" onclick="handleWaiveTurnover('${to.id}')">মওকুফ (Waive)</button>` : `<small style="color:var(--text-dim);">মওকুফ সম্পন্ন</small>`}
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function openSetTurnoverModal() {
+      document.getElementById('turnover-form').reset();
+      populateTenantSelects();
+      openModal('modal-turnover');
+    }
+
+    async function handleSaveTurnover(e) {
+      e.preventDefault();
+      const tenantId = document.getElementById('to-tenant').value;
+      const userId = document.getElementById('to-user-id').value.trim();
+      const targetAmount = parseFloat(document.getElementById('to-target-amount').value) || 0;
+      const notes = document.getElementById('to-notes').value.trim();
+
+      if (!tenantId || !targetAmount || !db) return;
+
+      const newKey = db.ref('turnover_records').push().key;
+      const data = {
+        id: newKey,
+        tenantId,
+        userId: userId || 'ALL_USERS',
+        targetAmount,
+        completedAmount: 0,
+        notes,
+        waived: false,
+        createdAt: firebase.database.ServerValue.TIMESTAMP,
+        updatedAt: firebase.database.ServerValue.TIMESTAMP
+      };
+
+      try {
+        await db.ref(`turnover_records/${newKey}`).set(data);
+        showToast('টার্নওভার লিমিট সফলভাবে সেট করা হয়েছে!', 'success');
+        closeModal('modal-turnover');
+      } catch (err) {
+        showToast('টার্নওভার সেভ ব্যর্থ: ' + err.message, 'error');
+      }
+    }
+
+    async function handleWaiveTurnover(id) {
+      if (!confirm('আপনি কি নিশ্চিত যে এই টার্নওভার লিমিট মওকুফ (Waive) করতে চান?')) return;
+      if (!db || !id) return;
+      try {
+        await db.ref(`turnover_records/${id}`).update({
+          waived: true,
+          waivedBy: STATE.superAdminUser.email,
+          updatedAt: firebase.database.ServerValue.TIMESTAMP
+        });
+        showToast('টার্নওভার লিমিট মওকুফ করা হয়েছে!', 'success');
+      } catch (err) {
+        showToast('মওকুফ ব্যর্থ: ' + err.message, 'error');
+      }
+    }
+
+    // L. Reports View
+    function renderReportsView() {
+      const tbody = document.getElementById('tenant-reports-table-tbody');
+      if (!tbody) return;
+
+      const approvedCount = STATE.fundRequests.filter(r => r.status === 'Approved').length;
+      const elApprovedCnt = document.getElementById('rep-approved-count');
+      if (elApprovedCnt) elApprovedCnt.innerText = approvedCount + ' টি';
+
+      if (STATE.tenants.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px; color:var(--text-dim);">কোনো টেন্যান্ট রিপোর্ট ডেটা নেই</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = STATE.tenants.map(t => {
+        const wallet = STATE.adminWallets[t.adminUid] || { balance: 0, totalReceived: 0 };
+        const bal = parseFloat(wallet.balance) || 0;
+        const received = parseFloat(wallet.totalReceived) || 0;
+
+        return `
+          <tr>
+            <td><b>${escapeHtml(t.name)}</b></td>
+            <td>${escapeHtml(t.adminEmail || 'N/A')}</td>
+            <td><b style="color:var(--primary); font-family:var(--font-display);">৳ ${bal.toLocaleString('en-US')}</b></td>
+            <td><b style="color:var(--success);">৳ ${received.toLocaleString('en-US')}</b></td>
+            <td><small style="color:var(--text-dim);">৳ 0</small></td>
+            <td><span class="badge badge-approved">${escapeHtml(t.status || 'Active')}</span></td>
+          </tr>
+        `;
+      }).join('');
+    }
+
     function switchView(viewId) {
       document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
       const target = document.getElementById(viewId);
@@ -1541,30 +3170,24 @@
       isSigningIn = true;
 
       try {
-        // Step 1: Firebase Authentication Login
         const cred = await auth.signInWithEmailAndPassword(email, pass);
 
-        // Verify UID matches configured Super Admin
         if (cred.user.uid !== AUTHORIZED_SUPER_ADMIN_UID) {
           await auth.signOut();
           showToast('এই অ্যাকাউন্টের Super Admin অনুমতি নেই (UID mismatch)', 'error');
           return;
         }
 
-        // Step 2: Backend ID token verification via GET /api/me
         const backendVerif = await verifySuperAdminWithBackend(cred.user, true);
         if (!backendVerif.ok) {
-          // If explicitly rejected (403 or 401 with unauthorized message)
           if (backendVerif.error.includes('403') || backendVerif.error.includes('অননুমোদিত')) {
             await auth.signOut();
             showToast(backendVerif.error, 'error');
             return;
           }
-          // If temporary network/timeout issue, warn but allow authorized UID
           console.warn('Backend note:', backendVerif.error);
         }
 
-        // Step 3: Grant access to protected dashboard
         STATE.superAdminUser.uid = cred.user.uid;
         STATE.superAdminUser.email = cred.user.email;
         STATE.superAdminUser.role = 'SUPER_ADMIN';
@@ -1614,7 +3237,7 @@
       checkBackendHealth();
       if (auth) {
         auth.onAuthStateChanged(async user => {
-          if (isSigningIn) return; // Ignore onAuthStateChanged during manual button click to prevent freezing
+          if (isSigningIn) return;
           if (user) {
             if (user.uid !== AUTHORIZED_SUPER_ADMIN_UID) {
               await auth.signOut();
@@ -1649,7 +3272,7 @@
       var gamesData = {};
       var gamesRef = null;
       var observer = null;
-      var pending = null;   // { mode, ids }
+      var pending = null;
       var busy = false;
 
       function $(id) { return document.getElementById(id); }
@@ -1683,7 +3306,6 @@
         return ids;
       }
 
-      /* ---------- টেবিলে কলাম যোগ ---------- */
       function ensureHeader() {
         var tr = document.querySelector('#view-games thead tr');
         if (!tr) return;
@@ -1694,7 +3316,7 @@
         th.className = 'gcc-th';
         th.textContent = 'Maintenance';
         var ths = tr.querySelectorAll('th');
-        tr.insertBefore(th, ths[4] || null);   // URL এবং স্ট্যাটাসের মাঝখানে
+        tr.insertBefore(th, ths[4] || null);
       }
 
       function cellHtml(id) {
@@ -1719,7 +3341,7 @@
             cell = document.createElement('td');
             cell.className = 'gcc-cell';
             var tds = tr.querySelectorAll('td');
-            tr.insertBefore(cell, tds[4] || null);   // স্ট্যাটাস কলামের আগে
+            tr.insertBefore(cell, tds[4] || null);
           }
           cell.setAttribute('data-gid', id);
           cell.innerHTML = cellHtml(id);
@@ -1741,7 +3363,6 @@
         toolbar.insertAdjacentElement('afterend', wrap);
       }
 
-      /* ---------- ডায়ালগ ---------- */
       function validEta() {
         var v = $('gcc-eta').value;
         if (!v) return { ok: true, value: null };
@@ -1770,7 +3391,6 @@
         if (m) m.classList.remove('active');
       }
 
-      /* ---------- সেভ + অডিট লগ (একটি atomic update) ---------- */
       async function apply(changes, kind) {
         var user = auth && auth.currentUser;
         if (!db || !isSuper(user)) { showToast('শুধু Super Admin এই পরিবর্তন করতে পারবেন', 'error'); return false; }
@@ -1831,7 +3451,7 @@
             if (!cb) return;
             var id = cb.closest('.gcc-cell').getAttribute('data-gid');
             var want = cb.checked;
-            cb.checked = !want;   // নিশ্চিত না হওয়া পর্যন্ত আগের অবস্থায়
+            cb.checked = !want;
             openDialog({
               mode: 'toggle', enable: want, ids: [id], fields: want,
               title: want ? 'Maintenance চালু করবেন?' : 'গেম আবার চালু করবেন?',
@@ -1907,8 +3527,6 @@
           refresh();
         }, function (err) {
           var isPermDenied = err && (err.code === 'PERMISSION_DENIED' || (err.message && err.message.toLowerCase().includes('permission_denied')));
-          // Firebase RTDB WebSocket auth handshake takes a moment to sync after initial login.
-          // Retry smoothly without displaying an alarming error toast to the user.
           if (isPermDenied && retryCount < 3 && auth && auth.currentUser) {
             retryCount++;
             console.warn('Realtime Database auth sync pending, retrying games listener (' + retryCount + '/3)...');
@@ -1935,7 +3553,6 @@
           if (user) {
             await window.NEXQIRO_roleCheck(user);
             if (isSuper(user)) {
-              // Wait 400ms for Firebase Realtime Database WebSocket to finish authenticating
               setTimeout(attach, 400);
             } else {
               gamesData = {};
